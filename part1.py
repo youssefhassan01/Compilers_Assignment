@@ -2,12 +2,21 @@ import re
 
 
 class state:
-    isTerminalState = None
-    inputCharacters = None
+    # here class varialbe only (static)
+    counter = 0  # counter of created states
 
-    def __init__(self, tState=False, inChar={}):
-        self.isTerminalState = tState
-        self.inputCharacters = inChar
+    def __init__(self, tState=False):
+        self.stateDict = dict()
+        self.stateDict["isTerminalState"] = tState
+        self.name = "S" + str(state.counter)
+        print('my name is ', self.name)
+        if (state.counter == 0):
+            self.stateDict["isStartingState"] = 1
+
+        state.counter += 1
+
+    def addTransition(self, otherstate, transitionString):
+        self.stateDict[otherstate.name] = transitionString
 
 
 recursioncounter = 0
@@ -31,7 +40,18 @@ def getIndexEndingBrack(stringInput, bracket):
     return index
 
 
-def makeNFA(regexInput, NFA):
+def ClassRangeLogic(regexInput):
+    pass
+
+
+# [expressions, operations]
+
+# expressions = string | operations(expression)
+# operations = functions(expressions)
+
+
+def makeNFA(regexInput):
+    global NFA
     global recursioncounter
     if (regexInput == ""):
         return NFA
@@ -41,10 +61,12 @@ def makeNFA(regexInput, NFA):
         index = getIndexEndingBrack(regexInput, '(')
         # print(regexInput[1:index])
         recursioncounter += 1
+
+        # get expression inside bracket
         newregexInput = regexInput[1:index-1]
         print(newregexInput)
-        makeNFA(newregexInput, NFA)
-        makeNFA(regexInput[index:], NFA)
+        makeNFA(newregexInput)
+        makeNFA(regexInput[index:])
         return
     if (c == "|"):
         print("found |")
@@ -60,30 +82,38 @@ def makeNFA(regexInput, NFA):
         # print(regexInput[1:index])
         recursioncounter += 1
         newregexInput = regexInput[1:index-1]
-        if ('-' in newregexInput):
-            # Range logic
-            pass
-        else:
-            # Classes logic
-            pass
         print(newregexInput)
+        ClassRangeLogic(newregexInput)
         makeNFA(regexInput[index:], NFA)
-        pass
+        return
     # makeNFA(regexInput[], NFA)
-    makeNFA(regexInput[1:], NFA)
+    if (c.isalnum()):  # do we need to add other characters here ?
+        # make state
+        mystate = state()
+        # print("namaywa", mystate.name)
+        print(NFA)
+        NFA[mystate.name] = mystate.stateDict
+        if (len(regexInput) > 1 and regexInput[1].isalnum()):
+            mystate.addTransition()
+        pass
+    makeNFA(regexInput[1:])
 
+# how does our function handle abc? (da m3nah concatenation)
 # abc
+# (abc|[a-z])
 
 
 NFA = {}
 # NFA = makeNFA("((ab|d)|c)", NFA)
-NFA = makeNFA("(((a)(b)|(d))|(c))", NFA)
+makeNFA("(((a)(b)|(d))|(c))")
+makeNFA("(abc|3)")
 
 
 # Regex = input("Enter Regex:")
 
 # size=len(Regex)
 
+# Regex = '[(hi)-z]'
 
 # try:
 #     re.compile(Regex)
