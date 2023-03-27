@@ -45,6 +45,8 @@ class superstate:
 
 recursioncounter = 0
 
+# gets string in form of something "(something)"
+
 
 def getIndexEndingBrack(stringInput, bracket):
     if (bracket == '('):
@@ -61,7 +63,7 @@ def getIndexEndingBrack(stringInput, bracket):
         elif (stringInput[index] == ClosingBracket):
             counter -= 1
         index += 1
-    return index
+    return index-1
 
 
 def ClassRangeLogic(regexInput):
@@ -114,17 +116,23 @@ def makeNFA(regexInput, contextindex=0):
     c = regexInput[contextindex]
     # Grouping
     if (c == "("):
-        index = getIndexEndingBrack(regexInput, '(')
+        # print('extracted string in brackets is', regexInput[contextindex:])
+        # passes string of form    "(something)"
+        index = getIndexEndingBrack(regexInput[contextindex:], '(')
         # print(regexInput[1:index])
         recursioncounter += 1
 
         # get expression inside bracket
-        newregexInput = regexInput[1:index-1]
-        print(newregexInput)
+        # print('index is ', index, 'therefore the new regex ...')
+        # mfee4 -1, excluded by default
+        newregexInput = regexInput[contextindex+1:index]
+
+        # print("new input is ", newregexInput)
         # parese new expression
         makeNFA(newregexInput)
         # parse from the beginning of the ending bracket
-        makeNFA(regexInput[index:])
+        # print(regexInput[index:])
+        makeNFA(regexInput[index+1:])  # skip the bracket
         return
     if (c == "|"):
         # call next expression first
@@ -166,7 +174,7 @@ def makeNFA(regexInput, contextindex=0):
         # print(regexInput[1:index])
         recursioncounter += 1
         newregexInput = regexInput[1:index-1]
-        print(newregexInput)
+        # print(newregexInput)
         ClassRangeLogic(newregexInput)
         makeNFA(regexInput[index:])
         return
@@ -192,25 +200,31 @@ def makeNFA(regexInput, contextindex=0):
 # abc
 # (abc|[a-z])
 
+
 # alpha.(   && alpha .[
 # ).alpha|(
-
+# myind = getIndexEndingBrack("(cd)", "(")
+# print("myind is ", myind)
 
 NFA = {}
 # NFA = makeNFA("((ab|d)|c)", NFA)
 # makeNFA("(((a)(b)|(d))|(c))")
 # makeNFA("abc")  # works
 # makeNFA("ab|cd")
-# makeNFA("(ab)|(cd)")  # error
+makeNFA("(ab)|(cd)")  # error
 # makeNFA("(abc|3)")
 # print(superstate_stack[0].startState)
 # print(superstate_stack[0].endState)
-print(superstate_stack[0])
+# print(superstate_stack[0])
 # print(AllStates)
 for s in AllStates:
     print(s)
 # print(superstate_stack[1])
 
+# A[1:3] starts from 1 really but excludes the 3
+# A = "Joseph"
+# print(A[1:])
+# print(A[1:3])
 # Regex = input("Enter Regex:")
 
 # size=len(Regex)
