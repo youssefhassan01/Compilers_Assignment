@@ -29,6 +29,12 @@ class state:
         print("}")
         return ''
 
+    def appendToEpsilon(self, otherstate):
+        if (self.stateDict.get("epsilon")):
+            self.stateDict["epsilon"].append(otherstate.name)
+            return
+        self.stateDict["epsilon"] = [otherstate.name]
+
 
 class superstate:
     # counter = 0  # counter of created states
@@ -116,7 +122,7 @@ def makeNFA(regexInput, contextindex=0):
     c = regexInput[contextindex]
     # Grouping
     if (c == "("):
-        # print('extracted string in brackets is', regexInput[contextindex:])
+        print('extracted string in brackets is', regexInput[contextindex:])
         # passes string of form    "(something)"
         index = getIndexEndingBrack(regexInput[contextindex:], '(')
         # print(regexInput[1:index])
@@ -124,10 +130,12 @@ def makeNFA(regexInput, contextindex=0):
 
         # get expression inside bracket
         # print('index is ', index, 'therefore the new regex ...')
+        # print('regexin is ', regexInput)
+        # print('regexin is ', regexInput)
         # mfee4 -1, excluded by default
-        newregexInput = regexInput[contextindex+1:index]
+        newregexInput = regexInput[contextindex+1:contextindex+index]
 
-        # print("new input is ", newregexInput)
+        print("new input is ", newregexInput)
         # parese new expression
         makeNFA(newregexInput)
         # parse from the beginning of the ending bracket
@@ -143,12 +151,12 @@ def makeNFA(regexInput, contextindex=0):
         ss1 = superstate_stack.pop()
 
         newStartState = state()
-        newStartState.stateDict["epsilon"] = [ss1.startState.name]
-        newStartState.stateDict["epsilon"].append(ss2.startState.name)
+        newStartState.appendToEpsilon(ss1.startState)
+        newStartState.appendToEpsilon(ss2.startState)
 
         newEndState = state()
-        ss1.endState.stateDict["epsilon"] = newEndState.name
-        ss2.endState.stateDict["epsilon"] = newEndState.name
+        ss1.endState.appendToEpsilon(newEndState)
+        ss2.endState.appendToEpsilon(newEndState)
         ss1.endState.stateDict["isTerminalState"] = False
         ss2.endState.stateDict["isTerminalState"] = False
 
@@ -157,16 +165,54 @@ def makeNFA(regexInput, contextindex=0):
         # concatLogic()
 
     if (c == '*'):
-        makeNFA(regexInput[1:])
         print("found *")
+        ss = superstate_stack.pop()
+        newStartState = state()
+        newEndState = state()
+        newStartState.appendToEpsilon(ss.startState)
+        # bypass from start to end (0 times)
+
+        newStartState.appendToEpsilon(newEndState)
+
+        ss.endState.appendToEpsilon(newStartState)
+        ss.endState.appendToEpsilon(newEndState)
+
+        ss.endState.stateDict["isTerminalState"] = False
+        newSuperState = superstate(newStartState, newEndState)
+        superstate_stack.append(newSuperState)
+
+        # makeNFA(regexInput[1:])
+        # continue parsing
+        makeNFA(regexInput, contextindex+1)
 
     if (c == '+'):
-        makeNFA(regexInput[1:])
         print("found +")
+        ss = superstate_stack.pop()
+        newStartState = state()
+        newEndState = state()
+
+        # newStartState.stateDict["epsilon"] = [ss.startState.name]
+        newStartState.appendToEpsilon(ss.startState)
+        # no bypass from start to end
+
+        ss.endState.appendToEpsilon(newStartState)
+        ss.endState.appendToEpsilon(newEndState)
+        ss.endState.stateDict["isTerminalState"] = False
+        newSuperState = superstate(newStartState, newEndState)
+        superstate_stack.append(newSuperState)
+
+        # makeNFA(regexInput[1:])
+        # continue parsing
+        makeNFA(regexInput, contextindex+1)
 
     if (c == '?'):
-        makeNFA(regexInput[1:])
         print("found ?")
+        ss = superstate_stack.pop()
+        # no bypass from start to end
+        # ss.startState.stateDict["epsilon"].append(ss.endState.name)
+        ss.startState.appendToEpsilon(ss.endState)
+        superstate_stack.append(ss)
+        makeNFA(regexInput, contextindex+1)
 
     # range or group
     if (c == '['):
@@ -180,7 +226,7 @@ def makeNFA(regexInput, contextindex=0):
         return
     # makeNFA(regexInput[], NFA)
     if (c.isalnum()):  # do we need to add other characters here ?
-        print("found letter/num")
+        print("found letter/num", c)
         # make 2 states
         firstState = state()
         secondState = state()
@@ -207,11 +253,12 @@ def makeNFA(regexInput, contextindex=0):
 # print("myind is ", myind)
 
 NFA = {}
-# NFA = makeNFA("((ab|d)|c)", NFA)
+# NFA = makeNFA("((ab|d)|c)")
+# makeNFA("a?")
 # makeNFA("(((a)(b)|(d))|(c))")
 # makeNFA("abc")  # works
 # makeNFA("ab|cd")
-makeNFA("(ab)|(cd)")  # error
+# makeNFA("(ab)|(cd)")  # error
 # makeNFA("(abc|3)")
 # print(superstate_stack[0].startState)
 # print(superstate_stack[0].endState)

@@ -1,0 +1,28 @@
+digraph {
+	fake [style=invisible]
+	s1
+	s2 [shape=doublecircle]
+	sink
+	s0 [root=true shape=doublecircle]
+	s3
+	s4
+	fake -> s0 [style=bold]
+	s0 -> s1 [label="5c"]
+	s0 -> s4 [label="10c"]
+	s1 -> s2 [label="5c"]
+	s1 -> s3 [label="10c"]
+	s2 -> s3 [label="5c"]
+	s2 -> s3 [label="10c"]
+	s4 -> s3 [label="5c"]
+	s4 -> s3 [label="10c"]
+	s3 -> s0 [label=gum]
+	s1 -> sink [label=gum]
+	s2 -> sink [label=gum]
+	sink -> sink [label=gum]
+	sink -> sink [label="5c"]
+	sink -> sink [label="10c"]
+	s0 -> sink [label=gum]
+	s3 -> sink [label="5c"]
+	s3 -> sink [label="10c"]
+	s4 -> sink [label=gum]
+}
