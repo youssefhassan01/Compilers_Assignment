@@ -1,4 +1,9 @@
 import re
+# import NFAdrawer from nfadrawer
+
+import nfadrawer
+# import NFAdrawer from nfadrawer
+# nfadrawer.NFAdrawer.drawNFA({})
 
 
 class state:
@@ -34,6 +39,11 @@ class state:
             self.stateDict["epsilon"].append(otherstate.name)
             return
         self.stateDict["epsilon"] = [otherstate.name]
+
+    def setStartStateFalse(self):
+        self.stateDict["isStartState"] = False
+        # if (self.stateDict.get("isStartState")):
+        #     del self.stateDict["isStartState"]
 
 
 class superstate:
@@ -86,8 +96,11 @@ def pipeLogic():
     newStartState = state()
     newStartState.appendToEpsilon(ss1.startState)
     newStartState.appendToEpsilon(ss2.startState)
+    newStartState.stateDict["isStartState"] = True
 
     newEndState = state()
+    ss1.startState.setStartStateFalse()
+    ss2.startState.setStartStateFalse()
     ss1.endState.appendToEpsilon(newEndState)
     ss2.endState.appendToEpsilon(newEndState)
     ss1.endState.stateDict["isTerminalState"] = False
@@ -101,6 +114,7 @@ def RangeLogic(regexInput, notFirstRange):
     print("Handling range", regexInput)
 
     firstState = state()
+    firstState.stateDict["isStartState"] = True
     secondState = state()
     firstState.addTransition(secondState, regexInput)
     # print("namaywa", firstState.name)
@@ -129,8 +143,14 @@ def concatLogic(previouscharacter):
 
         # or this (in slides)
         # ss2.startState = dict()
+        # del ss1.startState.stateDict["isStartState"]
+        ss1.stateState.setStartStateFalse()
+
         ss1.endState.addTransition(
             ss2.endState, ss2.startState.stateDict[ss2.endState.name])
+        # remove the isTerminalstatus
+        ss1.endState.stateDict["isTerminalState"] = False
+
         # ss1.endState.removeTransition(ss2.startState)
         AllStates.remove(ss2.startState)
         ss2.startState = dict()
@@ -149,8 +169,6 @@ def ClassRangeLogic(regexInput, previouscharacter):
         dashIndex = regexInput.find('-')
         if (dashIndex != -1):
             RangeLogic(regexInput[dashIndex-1:dashIndex+2], notFirstRange)
-            # print(regexInput[dashIndex-1:dashIndex+2])
-            # regexInput.replace(regexInput[dashIndex-1:dashIndex+2], '')
             regexInput = regexInput[:dashIndex-1] + regexInput[dashIndex+2:]
             notFirstRange = True
             print('new replaced regex input is ', regexInput)
@@ -159,7 +177,7 @@ def ClassRangeLogic(regexInput, previouscharacter):
         return
     counter = 0
     for i in range(1, len(regexInput)):  # from second position to before last character
-        print('lol', i)
+        # print('lol', i)
         regexInput = regexInput[:i+counter] + '|' + regexInput[i+counter:]
         counter += 1
 
@@ -183,8 +201,6 @@ def makeNFA(regexInput, contextindex=0):
     global NFA
     global superstate_stack
     global recursioncounter
-    # if (regexInput == ""):
-    #     return NFA
     if (contextindex == len(regexInput)):
         return NFA
     c = regexInput[contextindex]
@@ -193,13 +209,9 @@ def makeNFA(regexInput, contextindex=0):
         print('extracted string in brackets is', regexInput[contextindex:])
         # passes string of form    "(something)"
         index = getIndexEndingBrack(regexInput[contextindex:], '(')
-        # print(regexInput[1:index])
         recursioncounter += 1
 
         # get expression inside bracket
-        # print('index is ', index, 'therefore the new regex ...')
-        # print('regexin is ', regexInput)
-        # print('regexin is ', regexInput)
         # mfee4 -1, excluded by default
         newregexInput = regexInput[contextindex+1:contextindex+index]
 
@@ -240,36 +252,23 @@ def makeNFA(regexInput, contextindex=0):
         pipeLogic()
         # CHECKKK
         # not sure 5ales
-        if (contextindex != 0):
-            previous_c = regexInput[contextindex-1]
+        if (contextindex != 1):  # heya at least hatkoon tany letter m4 awl letter
+            previous_c = regexInput[contextindex-2]
             concatLogic(previous_c)
-        # ss2 = superstate_stack.pop()
-        # ss1 = superstate_stack.pop()
-
-        # newStartState = state()
-        # newStartState.appendToEpsilon(ss1.startState)
-        # newStartState.appendToEpsilon(ss2.startState)
-
-        # newEndState = state()
-        # ss1.endState.appendToEpsilon(newEndState)
-        # ss2.endState.appendToEpsilon(newEndState)
-        # ss1.endState.stateDict["isTerminalState"] = False
-        # ss2.endState.stateDict["isTerminalState"] = False
-
-        # newSuperState = superstate(newStartState, newEndState)
-        # superstate_stack.append(newSuperState)
-        # concatLogic()
 
     if (c == '*'):
         print("found *")
         ss = superstate_stack.pop()
         newStartState = state()
         newEndState = state()
+        newStartState.stateDict["isStartState"] = True
         newStartState.appendToEpsilon(ss.startState)
         # bypass from start to end (0 times)
 
         newStartState.appendToEpsilon(newEndState)
 
+        # del ss.startState.stateDict["isStartState"]
+        ss.startState.setStartStateFalse()
         ss.endState.appendToEpsilon(newStartState)
         ss.endState.appendToEpsilon(newEndState)
 
@@ -277,14 +276,6 @@ def makeNFA(regexInput, contextindex=0):
         newSuperState = superstate(newStartState, newEndState)
         superstate_stack.append(newSuperState)
 
-        # if (contextindex != 0):
-        #     previous_c = regexInput[contextindex-1]
-        #     # print(previous_c)
-        #     # if (previous_c.isalnum() or previous_c in ')]+*?'):
-        #     #     concatLogic()
-        #     concatLogic(previous_c)
-        # makeNFA(regexInput[1:])
-        # continue parsing
         if (contextindex != 0):
             previous_c = regexInput[contextindex-1]
             concatLogic(previous_c)
@@ -295,11 +286,13 @@ def makeNFA(regexInput, contextindex=0):
         ss = superstate_stack.pop()
         newStartState = state()
         newEndState = state()
+        newStartState.stateDict["isStartState"] = True
 
         # newStartState.stateDict["epsilon"] = [ss.startState.name]
         newStartState.appendToEpsilon(ss.startState)
         # no bypass from start to end
-
+        # del ss.startState.stateDict["isStartState"]
+        ss.startState.setStartStateFalse()
         ss.endState.appendToEpsilon(newStartState)
         ss.endState.appendToEpsilon(newEndState)
         ss.endState.stateDict["isTerminalState"] = False
@@ -341,13 +334,6 @@ def makeNFA(regexInput, contextindex=0):
             previous_c = regexInput[contextindex-1]
             concatLogic(previous_c)
         makeNFA(regexInput, contextindex+1)
-    # concatenate after all
-    # if (contextindex != 0):
-    #     previous_c = regexInput[contextindex-1]
-    #     # print(previous_c)
-    #     # if (previous_c.isalnum() or previous_c in ')]+*?'):
-    #     #     concatLogic()
-    #     concatLogic(previous_c)
 
 # how does our function handle abc? (da m3nah concatenation)
 # abc
@@ -364,10 +350,11 @@ NFA = {}
 # makeNFA(Regex)
 
 # ERROR CASES
-makeNFA("x?[0-9]+")  # gives error hena
+# makeNFA("x?[0-9]+")  # gives error hena
 
+# makeNFA("ab|c")
 # makeNFA("((ab|d)|c)")
-# makeNFA("[a-cb]*")
+makeNFA("[a-cd]*")
 # makeNFA("[abc]")
 # makeNFA("a?")
 # makeNFA("(((a)(b)|(d))|(c))")
@@ -382,6 +369,11 @@ makeNFA("x?[0-9]+")  # gives error hena
 # print(AllStates)
 for s in AllStates:
     print(s)
+
+nfadrawer.NFAdrawer.drawNFA(AllStates)
+
+# NFAdrawer.drawNFA(AllStates)
+# NFAdrawer.drawNFA(AllStates)
 # print(superstate_stack[1])
 
 # A[1:3] starts from 1 really but excludes the 3
@@ -398,8 +390,8 @@ for s in AllStates:
 # 1. Required scope for the input regular expressions:
 #   - Alternation a|b
 #   - Concatenation ab
-#   - 1 or more a*
-#   - 0 or more a+
+#   - 1 or more a+
+#   - 0 or more a*
 #   - Optional a?
 #   - Character/number classes [abc] or [345]
 #   - Ranges [a-c] or [0-5]
