@@ -1,7 +1,6 @@
 import re
 # import NFAdrawer from nfadrawer
-
-import nfadrawer
+from utils import utils
 # import NFAdrawer from nfadrawer
 # nfadrawer.NFAdrawer.drawNFA({})
 
@@ -40,10 +39,14 @@ class state:
             return
         self.stateDict["epsilon"] = [otherstate.name]
 
+    def appendToEpsilonbyName(self, otherstatename):
+        if (self.stateDict.get("epsilon")):
+            self.stateDict["epsilon"].append(otherstatename)
+            return
+        self.stateDict["epsilon"] = [otherstatename]
+
     def setStartStateFalse(self):
         self.stateDict["isStartState"] = False
-        # if (self.stateDict.get("isStartState")):
-        #     del self.stateDict["isStartState"]
 
 
 class superstate:
@@ -128,6 +131,7 @@ def RangeLogic(regexInput, notFirstRange):
 
 
 def concatLogic(previouscharacter):
+    # ya3ny law howa da or da haykammel
     if (not previouscharacter.isalnum() and not previouscharacter in ')]+*?'):
         return
     global superstate_stack
@@ -144,13 +148,18 @@ def concatLogic(previouscharacter):
         # or this (in slides)
         # ss2.startState = dict()
         # del ss1.startState.stateDict["isStartState"]
-        ss1.stateState.setStartStateFalse()
+        # ss1.startState.setStartStateFalse()
 
         ss1.endState.addTransition(
             ss2.endState, ss2.startState.stateDict[ss2.endState.name])
         # remove the isTerminalstatus
         ss1.endState.stateDict["isTerminalState"] = False
 
+        # before removing ss2.startState, we need to check if it had epsilon transitions
+        # if it did, we need to add them to ss1.endState
+        if (ss2.startState.stateDict.get("epsilon")):
+            for epsilonState in ss2.startState.stateDict["epsilon"]:
+                ss1.endState.appendToEpsilonbyName(epsilonState)
         # ss1.endState.removeTransition(ss2.startState)
         AllStates.remove(ss2.startState)
         ss2.startState = dict()
@@ -224,7 +233,9 @@ def makeNFA(regexInput, contextindex=0):
             concatLogic(previous_c)
         # parse from the beginning of the ending bracket
         # print(regexInput[index:])
-        makeNFA(regexInput[index+1:])  # skip the bracket
+        print('index is ', index, 'contextindex is ', contextindex)
+        # makeNFA(regexInput[index+1:])  # skip the bracket
+        makeNFA(regexInput, contextindex+index+1)  # skip the bracket
         return
 
     # range or group
@@ -241,7 +252,8 @@ def makeNFA(regexInput, contextindex=0):
         if (contextindex != 0):
             previous_c = regexInput[contextindex-1]
             concatLogic(previous_c)
-        makeNFA(regexInput[index+1:])  # skip the bracket
+        # makeNFA(regexInput[index+1:])  # skip the bracket
+        makeNFA(regexInput, contextindex+index+1)  # skip the bracket
         return
 
     if (c == "|"):
@@ -277,7 +289,7 @@ def makeNFA(regexInput, contextindex=0):
         superstate_stack.append(newSuperState)
 
         if (contextindex != 0):
-            previous_c = regexInput[contextindex-1]
+            previous_c = regexInput[contextindex-2]
             concatLogic(previous_c)
         makeNFA(regexInput, contextindex+1)
 
@@ -299,8 +311,12 @@ def makeNFA(regexInput, contextindex=0):
         newSuperState = superstate(newStartState, newEndState)
         superstate_stack.append(newSuperState)
 
+        # you need to calculate the previous index here
+        # like if it is (a|b)+ previous index is 0
+        # BAS ETSADA2? MIGHT WORK WITHOUT IT..
+        # ESPECIALLY BECAUSE WE CHECK THE superstack size
         if (contextindex != 0):
-            previous_c = regexInput[contextindex-1]
+            previous_c = regexInput[contextindex-2]
             concatLogic(previous_c)
 
         # continue parsing
@@ -311,10 +327,11 @@ def makeNFA(regexInput, contextindex=0):
         ss = superstate_stack.pop()
         # no bypass from start to end
         # ss.startState.stateDict["epsilon"].append(ss.endState.name)
+        # print(ss.startState)
         ss.startState.appendToEpsilon(ss.endState)
         superstate_stack.append(ss)
         if (contextindex != 0):
-            previous_c = regexInput[contextindex-1]
+            previous_c = regexInput[contextindex-2]
             concatLogic(previous_c)
 
         makeNFA(regexInput, contextindex+1)
@@ -325,12 +342,17 @@ def makeNFA(regexInput, contextindex=0):
         # make 2 states
         firstState = state()
         secondState = state()
+        firstState.stateDict["isStartState"] = True
+
         firstState.addTransition(secondState, c)
         # print("namaywa", firstState.name)
         # print(NFA)
         Superstate = superstate(firstState, secondState)
         superstate_stack.append(Superstate)
-        if (contextindex != 0):
+        if (contextindex != len(regexInput)-1):
+            print('nextchar', regexInput[contextindex+1])
+
+        if (contextindex != 0 and contextindex != len(regexInput)-1 and regexInput[contextindex+1] not in '*+?'):
             previous_c = regexInput[contextindex-1]
             concatLogic(previous_c)
         makeNFA(regexInput, contextindex+1)
@@ -353,27 +375,29 @@ NFA = {}
 # makeNFA("x?[0-9]+")  # gives error hena
 
 # makeNFA("ab|c")
-# makeNFA("((ab|d)|c)")
-makeNFA("[a-cd]*")
+# makeNFA("(a)b|c")
+# makeNFA("(a)(b)|c")
+# makeNFA("(a)(b)|c")
+# makeNFA("(((ab)|d)|c)") # error
+# makeNFA("[a-cd]*")
 # makeNFA("[abc]")
-# makeNFA("a?")
+# makeNFA("ab?")
 # makeNFA("(((a)(b)|(d))|(c))")
-# makeNFA("abc")  # works
-# makeNFA("ab|cd")
-# makeNFA("((a)(b)|((c)(d))")
-# makeNFA("(ab)|(cd)")  # works
-# makeNFA("(abc|3)")
-# print(superstate_stack[0].startState)
-# print(superstate_stack[0].endState)
-# print(superstate_stack[0])
+# makeNFA("abc")  # error
+# makeNFA("ab|cd") #error
+# makeNFA("((a)(b)|((c)(d))") #error
+# makeNFA("(ab)|(cd)")  # error
+# makeNFA("(abc|3)") # works lol
 # print(AllStates)
-for s in AllStates:
-    print(s)
+# for s in AllStates:
+#     print(s)
 
-nfadrawer.NFAdrawer.drawNFA(AllStates)
+AllStatesJSON = utils.convertAllstates(AllStates)
+utils.drawNFA(AllStatesJSON)
+# print('AllStatesJSON', AllStatesJSON)
+# for mystate in AllStatesJSON.items():
+#     print(mystate[0])
 
-# NFAdrawer.drawNFA(AllStates)
-# NFAdrawer.drawNFA(AllStates)
 # print(superstate_stack[1])
 
 # A[1:3] starts from 1 really but excludes the 3
