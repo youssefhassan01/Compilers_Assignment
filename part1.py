@@ -391,7 +391,7 @@ NFA = {}
 # makeNFA("(((a)(b)|(d))|(c))")
 # makeNFA("abc")
 # makeNFA("ab|cd")
-# makeNFA("((a)(b)|((c)(d))")  # error
+makeNFA("((a)(b)|(c)(d))")
 # makeNFA("(ab)|(cd)")
 # makeNFA("(abc|3)") # works lol
 # print(AllStates)
