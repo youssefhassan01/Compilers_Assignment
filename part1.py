@@ -352,9 +352,15 @@ def makeNFA(regexInput, contextindex=0):
         if (contextindex != len(regexInput)-1):
             print('nextchar', regexInput[contextindex+1])
 
-        if (contextindex != 0 and contextindex != len(regexInput)-1 and regexInput[contextindex+1] not in '*+?'):
+        if (contextindex != 0):
             previous_c = regexInput[contextindex-1]
-            concatLogic(previous_c)
+            if (contextindex != len(regexInput)-1):
+                # if not last character then check for higher priority logic
+                if (regexInput[contextindex+1] not in '*+?'):
+                    concatLogic(previous_c)
+            else:  # do concat logic in case of last character
+                concatLogic(previous_c)
+
         makeNFA(regexInput, contextindex+1)
 
 # how does our function handle abc? (da m3nah concatenation)
@@ -378,15 +384,15 @@ NFA = {}
 # makeNFA("(a)b|c")
 # makeNFA("(a)(b)|c")
 # makeNFA("(a)(b)|c")
-# makeNFA("(((ab)|d)|c)") # error
+# makeNFA("(((ab)|d)|c)")
 # makeNFA("[a-cd]*")
 # makeNFA("[abc]")
 # makeNFA("ab?")
 # makeNFA("(((a)(b)|(d))|(c))")
-# makeNFA("abc")  # error
-# makeNFA("ab|cd") #error
-# makeNFA("((a)(b)|((c)(d))") #error
-# makeNFA("(ab)|(cd)")  # error
+# makeNFA("abc")
+# makeNFA("ab|cd")
+# makeNFA("((a)(b)|((c)(d))")  # error
+# makeNFA("(ab)|(cd)")
 # makeNFA("(abc|3)") # works lol
 # print(AllStates)
 # for s in AllStates:
