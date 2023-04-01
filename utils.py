@@ -17,7 +17,7 @@ class utils:
         return allStatesDict
 
     @staticmethod
-    def drawNFA(allStatesJSON):
+    def drawNFA(allStatesJSON, drawingName="NFA Visualization"):
         nfa_states = set(
             mystate for mystate in allStatesJSON if (mystate != "startingState"))
 
@@ -61,15 +61,7 @@ class utils:
         automata2 = NFA(nfa_states, nfa_input_symbols,
                         nfa_transitions, nfa_initial_state, nfa_final_states)
         # automata2.view("NFA Visualization")
-        automata2.view("NFA Visualization")
-        # mynfa = VisualNFA(
-        #     states=nfa_states,
-        #     input_symbols=nfa_input_symbols,
-        #     transitions=nfa_transitions,
-        #     initial_state=nfa_initial_state,
-        #     final_states=nfa_final_states,
-        # )
-
+        automata2.view(drawingName)
         # state tuples  [('S0', {'S1': 'a-c'}), ('S1', {'epsilon': ['S5']}), ('S2', {'S3': 'd'}), ('S3', {'epsilon': ['S5']}), ('S4', {'epsilon': ['S0', 'S2']}), ('S5', {'epsilon': ['S6', 'S7']}), ('S6', {'epsilon': ['S4', 'S7']}), ('S7', {})]
         # nfa_states {'S5', 'S7', 'S6', 'S1', 'S3', 'S0', 'S4', 'S2'}
         # nfa_inputs {'a-c', 'd'}
