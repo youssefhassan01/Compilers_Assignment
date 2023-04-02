@@ -302,8 +302,8 @@ def Shuntyard(regexInput):
 # regex = "[a-cd]*"
 # regex = "a|b|c|d"
 # regex = "[a-d]"
-regex = "AB*[A-HIJKMNL]K(H)"
-print('postfix is ', Shuntyard(regex))
+# regex = "AB*[A-HIJKMNL]K(H)"
+# print('postfix is ', Shuntyard(regex))
 
 
 def wildCardLogic():
@@ -419,137 +419,51 @@ def concatLogic():
     superstate_stack.append(newSuperState)
 
 
-# def makeNFA(postfix):
-#     global makeNFAcurrIndex
-#     global NFA
-#     global superstate_stack
+def makeNFA(regexInput):
+    global makeNFAcurrIndex
+    global superstate_stack
 
-#     if (contextindex == len(regexInput)):
-#         return NFA
-#     c = regexInput[contextindex]
-#     # Grouping
-#     if (c == "("):
-#         print('extracted string in brackets is', regexInput[contextindex:])
-#         # passes string of form    "(something)"
-#         index = getIndexEndingBrack(regexInput[contextindex:], '(')
+    postfix = Shuntyard(regexInput)
+    for i in range(len(postfix)):
+        c = postfix[i]
+        if (c == "*"):
+            wildCardLogic()
+        elif (c == "+"):
+            plusLogic()
+        elif (c == '.'):
+            concatLogic()
+        elif (c == "?"):
+            optionalLogic()
+        elif (c == "|"):
+            pipeLogic()
+        else:
+            charLogic(c)
 
-#         # get expression inside bracket
-#         # mfee4 -1, excluded by default
-#         newregexInput = regexInput[contextindex+1: contextindex+index]
-
-#         # print("new input is ", newregexInput)
-#         # parese new expression in the brackets
-#         makeNFA(newregexInput)
-#         # concatenate the brackets states
-#         # if (contextindex != 0):
-#         #     previous_c = regexInput[contextindex-1]
-#         #     concatLogic(previous_c)
-
-#         if (contextindex != 0):
-#             previous_c = regexInput[contextindex-1]
-#             # print('regex expression is ', regexInput)
-#             # el regex expression byb2a kamel hena
-
-#             if (contextindex+index+1 != len(regexInput)):
-#                 # if not out of range then check for higher priority logic
-#                 print('next char is ', regexInput[contextindex+index+1])
-#                 if (regexInput[contextindex+index+1] not in '*+?'):
-#                     # print('lmao gamed')
-#                     concatLogic(previous_c)
-#             else:  # do concat logic in case of last character
-#                 concatLogic(previous_c)
-#         # parse from the beginning of the ending bracket
-#         # print(regexInput[index:])
-#         print('index is ', index, 'contextindex is ', contextindex)
-#         # makeNFA(regexInput[index+1:])  # skip the bracket
-#         makeNFA(regexInput, contextindex+index+1)  # skip the bracket
-#         return
-
-#     # range or group
-#     if (c == '['):
-#         index = getIndexEndingBrack(regexInput[contextindex:], '[')
-#         # print(regexInput[1:index])
-#         newregexInput = regexInput[contextindex+1: contextindex+index]
-#         previouscharacter = regexInput[contextindex -
-#                                        1] if (contextindex > 0) else ''
-#         print('previouscharacter is ', previouscharacter)
-#         # print(newregexInput)
-#         ClassRangeLogic(newregexInput, previouscharacter)
-#         if (contextindex != 0):
-#             previous_c = regexInput[contextindex-1]
-#             concatLogic(previous_c)
-#         # makeNFA(regexInput[index+1:])  # skip the bracket
-#         makeNFA(regexInput, contextindex+index+1)  # skip the bracket
-#         return
-
-#     if (c == "|"):
-#         # call next expression first
-#         makeNFA(regexInput, contextindex+1)
-#         # handle pipe logic
-#         print("found | at contextindex= ", contextindex)
-#         pipeLogic()
-#         # CHECKKK
-#         # not sure 5ales
-#         if (contextindex != 1):  # heya at least hatkoon tany letter m4 awl letter
-#             previous_c = regexInput[contextindex-2]
-#             concatLogic(previous_c)
-#         if (contextindex+2 != len(regexInput)):
-#             # if not out of range then check for higher priority logic
-#             print('next char is ', regexInput[contextindex+2])
-#             if (regexInput[contextindex+index+1] not in '*+?'):
-#                 # print('lmao gamed')
-#                 concatLogic(previous_c)
-#         else:  # do concat logic in case of last character
-#             concatLogic(previous_c)
-
-#     if (c == '*'):
-#         wildCardLogic()
-#         if (contextindex != 0):
-#             previous_c = regexInput[contextindex-2]
-#             concatLogic(previous_c)
-#         makeNFA(regexInput, contextindex+1)
-
-#     if (c == '+'):
-#         plusLogic()
-#         # you need to calculate the previous index here
-#         # like if it is (a|b)+ previous index is 0
-#         # BAS ETSADA2? MIGHT WORK WITHOUT IT..
-#         # ESPECIALLY BECAUSE WE CHECK THE superstack size
-#         if (contextindex != 0):
-#             previous_c = regexInput[contextindex-2]
-#             concatLogic(previous_c)
-
-#         # continue parsing
-#         makeNFA(regexInput, contextindex+1)
-
-#     if (c == '?'):
-#         optionalLogic()
-#         if (contextindex != 0):
-#             previous_c = regexInput[contextindex-2]
-#             concatLogic(previous_c)
-
-#         makeNFA(regexInput, contextindex+1)
-
-#     # makeNFA(regexInput[], NFA)
-#     if (c.isalnum()):  # do we need to add other characters here ?
-#         charLogic(c)
-#         if (contextindex != len(regexInput)-1):
-#             print('nextchar', regexInput[contextindex+1])
-
-#         if (contextindex != 0):
-#             previous_c = regexInput[contextindex-1]
-#             if (contextindex != len(regexInput)-1):
-#                 # if not last character then check for higher priority logic
-#                 if (regexInput[contextindex+1] not in '*+?'):
-#                     concatLogic(previous_c)
-#             else:  # do concat logic in case of last character
-#                 concatLogic(previous_c)
-
-#         makeNFA(regexInput, contextindex+1)
 
 # how does our function handle abc? (da m3nah concatenation)
 # abc
 # (abc|[a-z])
+regex = "ab?cd?(ef|g)*"
+adam = makeNFA(regex)
+for s in AllStates:
+    print(s)
+AllStatesJSON = utils.convertAllstates(AllStates)
+utils.drawNFA(AllStatesJSON, "NFA")
+# makeNFA("(((a)(b)|(d))|(c))")
+# makeNFA("abc")
+# makeNFA("ab|cd")
+# makeNFA("((a)(b)|(c)(d))")
+# makeNFA("(ab)|(cd)")
+# makeNFA("(abc|3)")  # works lol
+# print(AllStates)
+# for s in AllStates:
+#     print(s)
+
+# AllStatesJSON = utils.convertAllstates(AllStates)
+# utils.drawNFA(AllStatesJSON, "NFA")
+# print('AllStatesJSON', AllStatesJSON)
+# for mystate in AllStatesJSON.items():
+#     print(mystate[0])
 
 
 NFA = {}
