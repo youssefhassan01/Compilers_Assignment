@@ -294,6 +294,62 @@ postfix = ""
 
 # adds dots to the regex input
 
+# gets string in form of "a-c" and returns the range in form of "(a|b|c)"
+
+
+def convertRange(stringInput):
+    out = '('
+    for i in range(ord(stringInput[0]), ord(stringInput[2])+1):
+        out += chr(i)
+        # if not last character
+        out += '|' if i != ord(stringInput[2]) else ')'
+    return out
+
+# gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)
+
+
+def convertRangeClass(stringInput):
+    out = '('
+    i = 0
+    # myrange = range(len(stringInput)-1)
+    while i < len(stringInput):
+        c = stringInput[i]
+        if i != len(stringInput)-1:
+            v = stringInput[i+1]
+            if (v == '-'):
+                RangeInput = stringInput[i:i+3]  # 'A-Z'
+                if (i != 0):
+                    out += '|'
+                out += convertRange(RangeInput)
+                i += 2
+            else:
+                if (i == 0):
+                    out += c
+                if (i != 0 and c != '-'):
+                    out += '|' + c
+        else:
+            if (i == 0):
+                out += c
+            if (i != 0 and c != '-'):
+                out += '|' + c
+        i += 1
+    return out + ')'
+# gets string in form of "[]" and returns the index of the closing bracket
+
+
+def getEndofRange(stringInput):
+    OpenBracket = '['
+    ClosingBracket = ']'
+    counter = 1
+    index = 1
+    while (counter != 0):
+        if (stringInput[index] == OpenBracket):
+            counter += 1
+        elif (stringInput[index] == ClosingBracket):
+            counter -= 1
+        index += 1
+    return index-1
+
 
 def preprocess(regexInput):
     result = ""+regexInput
@@ -304,12 +360,15 @@ def preprocess(regexInput):
         v = regexInput[i+1]
         if c == '[':
             isinClass = True
+            # remove the first [
+            # result = result[:i+rescounter] + result[i+1+rescounter:]
         if c == ']':
             isinClass = False
-        if c in '*+?)]' and v not in '.*+?])' and not isinClass:
+        if c in '*+?)]' and v not in '.*+?])|' and not isinClass:
             result = result[:i+1+rescounter] + '.' + result[i+1+rescounter:]
             rescounter += 1
         # if c is a letter
+
         elif c.isalnum() and (v.isalnum() or v in '([') and not isinClass:
             result = result[:i+1+rescounter] + '.' + result[i+1+rescounter:]
             rescounter += 1
@@ -320,6 +379,7 @@ def Shuntyard(regexInput):
     global postfix
     global stack
     regexInput = preprocess(regexInput)
+    print('preprocessed string is ', regexInput)
     isInClass = False
     for i in range(len(regexInput)):
         c = regexInput[i]
@@ -349,6 +409,8 @@ def Shuntyard(regexInput):
         # normal character
         else:
             postfix += c
+            if isInClass:
+                postfix += '|'
 
     while (stack):
         postfix += stack.pop()
@@ -356,9 +418,16 @@ def Shuntyard(regexInput):
     return postfix
 
 
-# regex = "(A+.B*)?.(C|D)"
+# regex = "(AH+.B*)?.(C|D)"
+# regex = "[a-cd]*"
+# regex = "a|b|c|d"
 
 # print(Shuntyard(regex))
+
+# gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)
+# print(convertRangeClass("ZYa-cA-CHGF"))
+print(convertRangeClass("Ha-cY"))
+# print(convertRange("a-c"))
 
 # print(preprocess("AB*[CDE]K(H)"))
 
