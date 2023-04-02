@@ -364,6 +364,8 @@ def getEndofRange(stringInput):
     # -1 because of add 1 in the end of while loop
     return index-1
 
+# removes [] from the regex and replaces them with their equivalent ORed values
+
 
 def preprocessrangeclasses(regexInput):
     result = ""+regexInput
@@ -407,29 +409,6 @@ def preprocess(regexInput):
         if c == '[':
             bracketendind = getEndofRange(regexInput[i:])
             i += bracketendind-1  # skips bracket
-            # convertedexp, newdiff = convertRangeClass(
-            #     regexInput[i+1:i+bracketendind])
-            # remove the first [
-            # print(result[:i+rescounter+1])
-            # print(result[i+rescounter+bracketendind+1:])
-            # result = result[:i+rescounter] + \
-            #     convertedexp + result[i+rescounter+bracketendind+1:]
-            # print(i+rescounter)
-            # print('first part ', result[:i+rescounter])
-            # print('second part ', result[i+rescounter+bracketendind+1:])
-            # if (i+rescounter-1 > 0):
-            #     result = result[:i+rescounter-1] + convertedexp + \
-            #         result[i+rescounter+bracketendind+1:]
-            # else:
-            #     result = convertedexp + \
-            #         result[i+rescounter+bracketendind+1:]
-            # # why was there a minus 1 here ?
-            # rescounter += newdiff+1
-            # isinClass = True
-            # remove the first [
-            # i += bracketendind-1
-            # an extra one to parse ) at the end?
-            # rescounter += bracketendind-1
         if c in '*+?)]' and v not in '.*+?])|':
             print('found some special character and concatenating')
             # print(result[:i+1+rescounter])
@@ -447,11 +426,12 @@ def preprocess(regexInput):
             rescounter += 1
         i += 1
     print('first stage of processing result is', result)
+    # removes [] from the regex and replaces them with their equivalent ORed values
     result = preprocessrangeclasses(result)
     print('final result is ', result)
     return result
 
-
+# region test
 # gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)
 # print(convertRangeClass("ZYa-cA-CHGF"))
 # print(convertRangeClass("Ha-cA-CYB-Z"))
@@ -474,9 +454,9 @@ def preprocess(regexInput):
 
 # print(preprocess("[A-CDEFG]a[b-c]"))
 
-# print(preprocess("[A-C]a[b-c]d*"))    # has 2 logical errors
-# first stage of processing result is [A-C].a.[b-c].d*
-# final result is  ((A|B|C)).a((b|c))].d*
+# print(preprocess("[A-C]a[b-c]d*"))
+
+# endregion
 
 
 def Shuntyard(regexInput):
@@ -518,15 +498,15 @@ def Shuntyard(regexInput):
 
     while (stack):
         postfix += stack.pop()
-    print("postfix is ", postfix)
     return postfix
 
 
 # regex = "(AH+.B*)?.(C|D)"
 # regex = "[a-cd]*"
 # regex = "a|b|c|d"
-
-# print(Shuntyard(regex))
+# regex = "[a-d]"
+regex = "AB*[A-HIJKMNL]K(H)"
+print('postfix is ', Shuntyard(regex))
 
 
 def makeNFA(regexInput, contextindex=0):
