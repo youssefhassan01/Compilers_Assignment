@@ -377,10 +377,13 @@ def preprocessrangeclasses(regexInput):
             bracketendind = getEndofRange(regexInput[i:])
             convertedexp, newdiff = convertRangeClass(
                 regexInput[i+1:i+bracketendind])
+
+            print('first part is ', result[:i+rescounter])
+            print('second part is ', result[i+rescounter+bracketendind+1:])
             # remove the first[
             result = result[:i+rescounter] + convertedexp + \
                 result[i+rescounter+bracketendind+1:]  # +1 for ]
-            rescounter += newdiff
+            rescounter += newdiff+1
             # why was there a minus 1 here ?
             # remove the first [
             i += bracketendind-1
@@ -463,13 +466,17 @@ def preprocess(regexInput):
 # print(preprocess("AB*[A-HIJKMNL]K(H)"))
 # print(preprocess("AB*[A-CTYU]K(H)"))
 # print(preprocess("AB*[CDE]K(H)"))
-# print(preprocess("[A-CDEFG]a[b-c]"))  # has 2 logical errors
-# print(preprocess("[A-C]a[b-c]d*"))    # has 2 logical errors
 # print(preprocess("abcd"))  # works
 # print(preprocess("(ab)cd"))  # works
 # print(preprocess("[ab]cd"))  # work
 # print(preprocess("[a-ghj]cd"))  # work
 # print(convertRangeClass("a-g"))
+
+# print(preprocess("[A-CDEFG]a[b-c]"))
+
+# print(preprocess("[A-C]a[b-c]d*"))    # has 2 logical errors
+# first stage of processing result is [A-C].a.[b-c].d*
+# final result is  ((A|B|C)).a((b|c))].d*
 
 
 def Shuntyard(regexInput):
