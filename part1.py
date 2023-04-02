@@ -384,10 +384,15 @@ def preprocess(regexInput):
             # print(result[i+rescounter+bracketendind+1:])
             # result = result[:i+rescounter] + \
             #     convertedexp + result[i+rescounter+bracketendind+1:]
-            print('first part ', result[:i+rescounter-1])
-            print('second part ', result[i+rescounter+bracketendind+1:])
-            result = result[:i+rescounter] + convertedexp + \
-                result[i+rescounter+bracketendind+1:]
+            # print(i+rescounter)
+            # print('first part ', result[:i+rescounter])
+            # print('second part ', result[i+rescounter+bracketendind+1:])
+            if (i+rescounter-1 > 0):
+                result = result[:i+rescounter-1] + convertedexp + \
+                    result[i+rescounter+bracketendind+1:]
+            else:
+                result = convertedexp + \
+                    result[i+rescounter+bracketendind+1:]
             rescounter += newdiff-1
             # isinClass = True
             # remove the first [
@@ -424,7 +429,7 @@ def preprocess(regexInput):
 # print(preprocess("AB*[A-H]K(H)"))
 # print(preprocess("AB*[A-CTYU]K(H)"))
 # print(preprocess("AB*[CDE]K(H)"))
-print(preprocess("[A-C]a[b-c]"))
+print(preprocess("[A-CDEFG]a[b-c]"))
 # print(preprocess("[A-C]a[b-c]d*"))
 
 
