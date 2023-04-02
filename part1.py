@@ -298,12 +298,18 @@ postfix = ""
 
 
 def convertRange(stringInput):
+    differencecounter = 1
     out = '('
     for i in range(ord(stringInput[0]), ord(stringInput[2])+1):
         out += chr(i)
+        differencecounter += 2  # for character and then either a pipe or closing bracket
         # if not last character
-        out += '|' if i != ord(stringInput[2]) else ')'
-    return out
+        if i != ord(stringInput[2]):
+            out += '|'
+        else:
+            out += ')'
+        # out += '|' if i != ord(stringInput[2]) else ')'
+    return out, differencecounter
 
 # gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)
 
@@ -311,7 +317,9 @@ def convertRange(stringInput):
 def convertRangeClass(stringInput):
     out = '('
     i = 0
-    # myrange = range(len(stringInput)-1)
+    # counts the difference between the original string and new string
+    # disregarding the brackets
+    differencecounter = 0
     while i < len(stringInput):
         c = stringInput[i]
         if i != len(stringInput)-1:
@@ -320,21 +328,28 @@ def convertRangeClass(stringInput):
                 RangeInput = stringInput[i:i+3]  # 'A-Z'
                 if (i != 0):
                     out += '|'
-                out += convertRange(RangeInput)
+                    differencecounter += 1
+                convertedRange, extradiff = convertRange(RangeInput)
+                out += convertedRange
+                differencecounter += extradiff
+                differencecounter -= 1  # for the dash
                 i += 2
             else:
                 if (i == 0):
                     out += c
                 if (i != 0 and c != '-'):
                     out += '|' + c
+                    differencecounter += 1
         else:
             if (i == 0):
                 out += c
             if (i != 0 and c != '-'):
                 out += '|' + c
+                differencecounter += 1
+
         i += 1
-    return out + ')'
-# gets string in form of "[]" and returns the index of the closing bracket
+    return out + ')', differencecounter
+# gets string in form of "[something]dasdsada" and returns the index of the closing bracket
 
 
 def getEndofRange(stringInput):
@@ -348,38 +363,76 @@ def getEndofRange(stringInput):
         elif (stringInput[index] == ClosingBracket):
             counter -= 1
         index += 1
+    # -1 because of add 1 in the end of while loop
     return index-1
 
 
 def preprocess(regexInput):
     result = ""+regexInput
     rescounter = 0
-    isinClass = False
-    for i in range(len(regexInput)-1):
+    # isinClass = False
+    i = 0
+    while i < len(regexInput)-1:
         c = regexInput[i]
         v = regexInput[i+1]
         if c == '[':
-            isinClass = True
+            bracketendind = getEndofRange(regexInput[i:])
+            convertedexp, newdiff = convertRangeClass(
+                regexInput[i+1:i+bracketendind])
             # remove the first [
-            # result = result[:i+rescounter] + result[i+1+rescounter:]
-        if c == ']':
-            isinClass = False
-        if c in '*+?)]' and v not in '.*+?])|' and not isinClass:
-            result = result[:i+1+rescounter] + '.' + result[i+1+rescounter:]
+            # print(result[:i+rescounter+1])
+            # print(result[i+rescounter+bracketendind+1:])
+            # result = result[:i+rescounter] + \
+            #     convertedexp + result[i+rescounter+bracketendind+1:]
+            print('first part ', result[:i+rescounter-1])
+            print('second part ', result[i+rescounter+bracketendind+1:])
+            result = result[:i+rescounter] + convertedexp + \
+                result[i+rescounter+bracketendind+1:]
+            rescounter += newdiff-1
+            # isinClass = True
+            # remove the first [
+            # i += bracketendind-1
+            # an extra one to parse ) at the end?
+            i += bracketendind-1
+            # rescounter += bracketendind-1
+        if c in '*+?)]' and v not in '.*+?])|':
+
+            # print(result[:i+1+rescounter])
+            # why was there an extra +1 here ?
+            result = result[:i+rescounter] + '.' + result[i+rescounter:]
             rescounter += 1
         # if c is a letter
 
-        elif c.isalnum() and (v.isalnum() or v in '([') and not isinClass:
-            result = result[:i+1+rescounter] + '.' + result[i+1+rescounter:]
+        elif c.isalnum() and (v.isalnum() or v in '(['):
+            # why was there an extra +1 here ?
+            result = result[:i+rescounter] + '.' + result[i+rescounter:]
             rescounter += 1
+        i += 1
+        # rescounter += 1
+    print('preprocessed string is ', result)
     return result
+
+
+# gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)
+# print(convertRangeClass("ZYa-cA-CHGF"))
+# print(convertRangeClass("Ha-cA-CYB-Z"))
+# print(convertRange("a-c"))
+# res, diff = convertRangeClass("A-HUI")
+# print(res, diff, len(res))
+# preprocess('a[b-c]d') #error
+# preprocess('a[b-c]d*')
+# print(preprocess("AB*[A-H]K(H)"))
+# print(preprocess("AB*[A-CTYU]K(H)"))
+# print(preprocess("AB*[CDE]K(H)"))
+print(preprocess("[A-C]a[b-c]"))
+# print(preprocess("[A-C]a[b-c]d*"))
 
 
 def Shuntyard(regexInput):
     global postfix
     global stack
     regexInput = preprocess(regexInput)
-    print('preprocessed string is ', regexInput)
+    # print('preprocessed string is ', regexInput)
     isInClass = False
     for i in range(len(regexInput)):
         c = regexInput[i]
@@ -423,13 +476,6 @@ def Shuntyard(regexInput):
 # regex = "a|b|c|d"
 
 # print(Shuntyard(regex))
-
-# gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)
-# print(convertRangeClass("ZYa-cA-CHGF"))
-print(convertRangeClass("Ha-cY"))
-# print(convertRange("a-c"))
-
-# print(preprocess("AB*[CDE]K(H)"))
 
 
 def makeNFA(regexInput, contextindex=0):
