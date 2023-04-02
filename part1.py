@@ -325,6 +325,7 @@ def wildCardLogic():
 
     ss.endState.stateDict["isTerminalState"] = False
     newSuperState = superstate(newStartState, newEndState)
+    print(newSuperState)
     superstate_stack.append(newSuperState)
 
 
@@ -401,20 +402,22 @@ def concatLogic():
     print("Handling Concat logic")
     ss2 = superstate_stack.pop()
     ss1 = superstate_stack.pop()
-    if (ss2.startState.stateDict.get(ss2.endState.name)):
-        ss1.endState.addTransition(
-            ss2.endState, ss2.startState.stateDict[ss2.endState.name])
+    # if (ss2.startState.stateDict.get(ss2.endState.name)):
+    #     ss1.endState.addTransition(
+    #         ss2.endState, ss2.startState.stateDict[ss2.endState.name])
     # remove the isTerminalstatus
+    ss1.endState.appendToEpsilon(ss2.startState)
     ss1.endState.stateDict["isTerminalState"] = False
+    ss2.startState.setStartStateFalse()
 
     # before removing ss2.startState, we need to check if it had epsilon transitions
     # if it did, we need to add them to ss1.endState
-    if (ss2.startState.stateDict.get("epsilon")):
-        for epsilonState in ss2.startState.stateDict["epsilon"]:
-            ss1.endState.appendToEpsilonbyName(epsilonState)
+    # if (ss2.startState.stateDict.get("epsilon")):
+    #     for epsilonState in ss2.startState.stateDict["epsilon"]:
+    #         ss1.endState.appendToEpsilonbyName(epsilonState)
     # ss1.endState.removeTransition(ss2.startState)
-    AllStates.remove(ss2.startState)
-    ss2.startState = dict()
+    # AllStates.remove(ss2.startState)
+    # ss2.startState = dict()
     newSuperState = superstate(ss1.startState, ss2.endState)
     superstate_stack.append(newSuperState)
 
@@ -443,7 +446,9 @@ def makeNFA(regexInput):
 # how does our function handle abc? (da m3nah concatenation)
 # abc
 # (abc|[a-z])
-regex = "ab?cd?(ef|g)*"
+# regex = "ab?cd?(ef|g)*"
+# regex = "abc[g-h]*"
+# regex = "ab"
 adam = makeNFA(regex)
 for s in AllStates:
     print(s)
