@@ -344,7 +344,8 @@ def convertRangeClass(stringInput):
                 # differencecounter += 1
 
         i += 1
-    differencecounter = len(out) - len(stringInput) - 2  # -2 for the brackets
+    # -2 for the brackets that are ommitted outside
+    differencecounter = len(out) - len(stringInput) - 2
     return out + ')', differencecounter
 # gets string in form of "[something]dasdsada" and returns the index of the closing bracket
 
@@ -364,7 +365,7 @@ def getEndofRange(stringInput):
     return index-1
 
 
-def preprocess(regexInput):
+def preprocessrangeclasses(regexInput):
     result = ""+regexInput
     rescounter = 0
     # isinClass = False
@@ -376,6 +377,35 @@ def preprocess(regexInput):
             bracketendind = getEndofRange(regexInput[i:])
             convertedexp, newdiff = convertRangeClass(
                 regexInput[i+1:i+bracketendind])
+            # remove the first[
+            result = result[:i+rescounter] + convertedexp + \
+                result[i+rescounter+bracketendind+1:]  # +1 for ]
+            rescounter += newdiff
+            # why was there a minus 1 here ?
+            # remove the first [
+            i += bracketendind-1
+            # an extra one to parse ) at the end?
+            # rescounter += bracketendind-1
+        i += 1
+    return result
+
+# new appraoch: Separate preprocessing into 2 stages to make it easier:
+# handle the concatenation first and then handle the rangeclasses
+
+
+def preprocess(regexInput):
+    result = ""+regexInput
+    rescounter = 0
+    # isinClass = False
+    i = 0
+    while i < len(regexInput)-1:
+        c = regexInput[i]
+        v = regexInput[i+1]
+        if c == '[':
+            bracketendind = getEndofRange(regexInput[i:])
+            i += bracketendind-1  # skips bracket
+            # convertedexp, newdiff = convertRangeClass(
+            #     regexInput[i+1:i+bracketendind])
             # remove the first [
             # print(result[:i+rescounter+1])
             # print(result[i+rescounter+bracketendind+1:])
@@ -384,19 +414,18 @@ def preprocess(regexInput):
             # print(i+rescounter)
             # print('first part ', result[:i+rescounter])
             # print('second part ', result[i+rescounter+bracketendind+1:])
-            if (i+rescounter-1 > 0):
-                result = result[:i+rescounter-1] + convertedexp + \
-                    result[i+rescounter+bracketendind+1:]
-            else:
-                result = convertedexp + \
-                    result[i+rescounter+bracketendind+1:]
-            # why was there a minus 1 here ?
-            rescounter += newdiff
+            # if (i+rescounter-1 > 0):
+            #     result = result[:i+rescounter-1] + convertedexp + \
+            #         result[i+rescounter+bracketendind+1:]
+            # else:
+            #     result = convertedexp + \
+            #         result[i+rescounter+bracketendind+1:]
+            # # why was there a minus 1 here ?
+            # rescounter += newdiff+1
             # isinClass = True
             # remove the first [
             # i += bracketendind-1
             # an extra one to parse ) at the end?
-            i += bracketendind-1
             # rescounter += bracketendind-1
         if c in '*+?)]' and v not in '.*+?])|':
             print('found some special character and concatenating')
@@ -409,14 +438,14 @@ def preprocess(regexInput):
         # if c is a letter
 
         elif c.isalnum() and (v.isalnum() or v in '(['):
-            # why was there an extra +1 here ?
             # +1 for the character
             cuttingindex = i+rescounter+1
             result = result[:cuttingindex] + '.' + result[cuttingindex:]
             rescounter += 1
         i += 1
-        # rescounter += 1
-    print('preprocessed string is ', result)
+    print('first stage of processing result is', result)
+    result = preprocessrangeclasses(result)
+    print('final result is ', result)
     return result
 
 
@@ -426,18 +455,21 @@ def preprocess(regexInput):
 # print(convertRange("a-c"))
 # res, diff = convertRangeClass("A-HUI")
 # print(res, diff, len(res))
-# preprocess('a[b-c]d') #error
+# preprocess('a[b-c]')
+# preprocess('a[b-c]d')
 # preprocess('a[b-c]d*')
+# print(preprocess("AB*[A-H]K(HABCSD)"))
 # print(preprocess("AB*[A-H]K(H)"))
+# print(preprocess("AB*[A-HIJKMNL]K(H)"))
 # print(preprocess("AB*[A-CTYU]K(H)"))
 # print(preprocess("AB*[CDE]K(H)"))
-# print(preprocess("[A-CDEFG]a[b-c]"))
-# print(preprocess("[A-C]a[b-c]d*"))
+# print(preprocess("[A-CDEFG]a[b-c]"))  # has 2 logical errors
+# print(preprocess("[A-C]a[b-c]d*"))    # has 2 logical errors
 # print(preprocess("abcd"))  # works
 # print(preprocess("(ab)cd"))  # works
-# print(preprocess("[ab]cd"))  # works
-print(preprocess("[a-g]cd"))  # doesn't work
-print(convertRange("a-g"))
+# print(preprocess("[ab]cd"))  # work
+# print(preprocess("[a-ghj]cd"))  # work
+# print(convertRangeClass("a-g"))
 
 
 def Shuntyard(regexInput):
