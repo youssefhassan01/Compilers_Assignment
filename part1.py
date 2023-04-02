@@ -234,7 +234,7 @@ def concatLogic(previouscharacter):
         superstate_stack.append(newSuperState)
 
 
-def ClassRangeLogic(regexInput, previouscharacter):
+def ClassRangeLogic(regexInput):
 
     # find - (the dash) and remove it together with surrounding characters
     notFirstRange = False
@@ -272,6 +272,97 @@ def ClassRangeLogic(regexInput, previouscharacter):
     # concatLogic(previouscharacter)
 
 
+# precedence:  * > + > ? > concat >| >
+def getPrecedence(operator):
+    match(operator):
+        case '*':
+            return 5
+        case '+':
+            return 4
+        case '?':
+            return 2
+        case '.':
+            return 1
+        case '|':
+            return 0
+        case _:
+            return -1
+
+
+stack = []
+postfix = ""
+
+# adds dots to the regex input
+
+
+def preprocess(regexInput):
+    result = ""+regexInput
+    rescounter = 0
+    isinClass = False
+    for i in range(len(regexInput)-1):
+        c = regexInput[i]
+        v = regexInput[i+1]
+        if c == '[':
+            isinClass = True
+        if c == ']':
+            isinClass = False
+        if c in '*+?)]' and v not in '.*+?])' and not isinClass:
+            result = result[:i+1+rescounter] + '.' + result[i+1+rescounter:]
+            rescounter += 1
+        # if c is a letter
+        elif c.isalnum() and (v.isalnum() or v in '([') and not isinClass:
+            result = result[:i+1+rescounter] + '.' + result[i+1+rescounter:]
+            rescounter += 1
+    return result
+
+
+def Shuntyard(regexInput):
+    global postfix
+    global stack
+    regexInput = preprocess(regexInput)
+    isInClass = False
+    for i in range(len(regexInput)):
+        c = regexInput[i]
+        if (c.isalnum()):
+            postfix += c
+        elif (c in '(['):
+            stack.append(c)
+            if c == '[':
+                isInClass = True
+        elif (c in ')]'):
+            while (stack[-1] != '('):  # stack top
+                postfix += stack.pop()
+            stack.pop()
+            isInClass = False
+        elif (c in "*+?|."):
+            while (stack and getPrecedence(c) <= getPrecedence(stack[-1])):
+                postfix += stack.pop()
+            stack.append(c)
+        elif c == '-':
+            final = regexInput[i+1]
+            initial = postfix[-1]
+            processed_range = ''
+            for j in range(ord(initial), ord(final)+1):
+                processed_range += chr(j)
+                processed_range += '|'
+            regexInput = regexInput[:i-1] + processed_range + regexInput[i+2:]
+        # normal character
+        else:
+            postfix += c
+
+    while (stack):
+        postfix += stack.pop()
+    print("postfix is ", postfix)
+    return postfix
+
+
+# regex = "(A+.B*)?.(C|D)"
+
+# print(Shuntyard(regex))
+
+# print(preprocess("AB*[CDE]K(H)"))
+
+
 def makeNFA(regexInput, contextindex=0):
     global makeNFAcurrIndex
     global NFA
@@ -289,7 +380,7 @@ def makeNFA(regexInput, contextindex=0):
 
         # get expression inside bracket
         # mfee4 -1, excluded by default
-        newregexInput = regexInput[contextindex+1:contextindex+index]
+        newregexInput = regexInput[contextindex+1: contextindex+index]
 
         # print("new input is ", newregexInput)
         # parese new expression in the brackets
@@ -324,7 +415,7 @@ def makeNFA(regexInput, contextindex=0):
         index = getIndexEndingBrack(regexInput[contextindex:], '[')
         # print(regexInput[1:index])
         recursioncounter += 1
-        newregexInput = regexInput[contextindex+1:contextindex+index]
+        newregexInput = regexInput[contextindex+1: contextindex+index]
         previouscharacter = regexInput[contextindex -
                                        1] if (contextindex > 0) else ''
         print('previouscharacter is ', previouscharacter)
@@ -429,7 +520,7 @@ NFA = {}
 # makeNFA("ab?")
 
 
-makeNFA("ab?cd?(ef|g)*")
+# makeNFA("ab?cd?(ef|g)*")
 
 
 # makeNFA("(((a)(b)|(d))|(c))")
@@ -442,8 +533,8 @@ makeNFA("ab?cd?(ef|g)*")
 # for s in AllStates:
 #     print(s)
 
-AllStatesJSON = utils.convertAllstates(AllStates)
-utils.drawNFA(AllStatesJSON, "NFA")
+# AllStatesJSON = utils.convertAllstates(AllStates)
+# utils.drawNFA(AllStatesJSON, "NFA")
 # print('AllStatesJSON', AllStatesJSON)
 # for mystate in AllStatesJSON.items():
 #     print(mystate[0])
