@@ -298,20 +298,15 @@ postfix = ""
 
 
 def convertRange(stringInput):
-    differencecounter = 1
     out = '('
     for i in range(ord(stringInput[0]), ord(stringInput[2])+1):
+        # for character and then either a pipe or closing bracket
         out += chr(i)
-        differencecounter += 2  # for character and then either a pipe or closing bracket
         # if not last character
-        if i != ord(stringInput[2]):
-            out += '|'
-        else:
-            out += ')'
-        # out += '|' if i != ord(stringInput[2]) else ')'
-    return out, differencecounter
+        out += '|' if i != ord(stringInput[2]) else ')'
+    return out
 
-# gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)
+# gets string in form of "ZYa-cA-CHGF" and returns the range in form of "(Z|Y|a|b|c|A|B|C|H|G|F)"
 
 
 def convertRangeClass(stringInput):
@@ -319,7 +314,7 @@ def convertRangeClass(stringInput):
     i = 0
     # counts the difference between the original string and new string
     # disregarding the brackets
-    differencecounter = 0
+    # differencecounter = 0
     while i < len(stringInput):
         c = stringInput[i]
         if i != len(stringInput)-1:
@@ -328,26 +323,28 @@ def convertRangeClass(stringInput):
                 RangeInput = stringInput[i:i+3]  # 'A-Z'
                 if (i != 0):
                     out += '|'
-                    differencecounter += 1
-                convertedRange, extradiff = convertRange(RangeInput)
+                    # differencecounter += 1
+                # convertedRange, extradiff = convertRange(RangeInput)
+                convertedRange = convertRange(RangeInput)
                 out += convertedRange
-                differencecounter += extradiff
-                differencecounter -= 1  # for the dash
+                # differencecounter += extradiff
+                # differencecounter -= 1  # for the dash
                 i += 2
             else:
                 if (i == 0):
                     out += c
                 if (i != 0 and c != '-'):
                     out += '|' + c
-                    differencecounter += 1
+                    # differencecounter += 1
         else:
             if (i == 0):
                 out += c
             if (i != 0 and c != '-'):
                 out += '|' + c
-                differencecounter += 1
+                # differencecounter += 1
 
         i += 1
+    differencecounter = len(out) - len(stringInput) - 2  # -2 for the brackets
     return out + ')', differencecounter
 # gets string in form of "[something]dasdsada" and returns the index of the closing bracket
 
@@ -393,7 +390,8 @@ def preprocess(regexInput):
             else:
                 result = convertedexp + \
                     result[i+rescounter+bracketendind+1:]
-            rescounter += newdiff-1
+            # why was there a minus 1 here ?
+            rescounter += newdiff
             # isinClass = True
             # remove the first [
             # i += bracketendind-1
@@ -401,16 +399,20 @@ def preprocess(regexInput):
             i += bracketendind-1
             # rescounter += bracketendind-1
         if c in '*+?)]' and v not in '.*+?])|':
-
+            print('found some special character and concatenating')
             # print(result[:i+1+rescounter])
-            # why was there an extra +1 here ?
-            result = result[:i+rescounter] + '.' + result[i+rescounter:]
+            # +1 for the character itself (the brackets or asterisk or whatever)
+            cuttingindex = i+rescounter+1
+            result = result[:cuttingindex] + '.' + result[cuttingindex:]
             rescounter += 1
+            print('result now is ', result)
         # if c is a letter
 
         elif c.isalnum() and (v.isalnum() or v in '(['):
             # why was there an extra +1 here ?
-            result = result[:i+rescounter] + '.' + result[i+rescounter:]
+            # +1 for the character
+            cuttingindex = i+rescounter+1
+            result = result[:cuttingindex] + '.' + result[cuttingindex:]
             rescounter += 1
         i += 1
         # rescounter += 1
@@ -429,8 +431,13 @@ def preprocess(regexInput):
 # print(preprocess("AB*[A-H]K(H)"))
 # print(preprocess("AB*[A-CTYU]K(H)"))
 # print(preprocess("AB*[CDE]K(H)"))
-print(preprocess("[A-CDEFG]a[b-c]"))
+# print(preprocess("[A-CDEFG]a[b-c]"))
 # print(preprocess("[A-C]a[b-c]d*"))
+# print(preprocess("abcd"))  # works
+# print(preprocess("(ab)cd"))  # works
+# print(preprocess("[ab]cd"))  # works
+print(preprocess("[a-g]cd"))  # doesn't work
+print(convertRange("a-g"))
 
 
 def Shuntyard(regexInput):
