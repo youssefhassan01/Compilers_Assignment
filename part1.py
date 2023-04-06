@@ -21,6 +21,15 @@ class state:
         global AllStates
         AllStates.append(self)
 
+    # def __iter__(self):
+    #     return self
+    
+    # def __next__(self):
+    #     if self.currIndex > self.stateNum:
+    #         raise StopIteration
+    #     else:
+    #         return self
+
     def addTransition(self, otherstate, transitionString):
         self.stateDict[otherstate.name] = transitionString
 
@@ -399,7 +408,7 @@ def pipeLogic():
 
 def concatLogic():
     global superstate_stack
-    print("Handling Concat logic")
+    #print("Handling Concat logic")
     ss2 = superstate_stack.pop()
     ss1 = superstate_stack.pop()
     # if (ss2.startState.stateDict.get(ss2.endState.name)):
@@ -449,11 +458,11 @@ def makeNFA(regexInput):
 # regex = "ab?cd?(ef|g)*"
 # regex = "abc[g-h]*"
 # regex = "ab"
-adam = makeNFA(regex)
-for s in AllStates:
-    print(s)
-AllStatesJSON = utils.convertAllstates(AllStates)
-utils.drawNFA(AllStatesJSON, "NFA")
+# adam = makeNFA(regex)
+# for s in AllStates:
+#     print(s)
+# AllStatesJSON = utils.convertAllstates(AllStates)
+# utils.drawNFA(AllStatesJSON, "NFA")
 # makeNFA("(((a)(b)|(d))|(c))")
 # makeNFA("abc")
 # makeNFA("ab|cd")
@@ -471,7 +480,7 @@ utils.drawNFA(AllStatesJSON, "NFA")
 #     print(mystate[0])
 
 
-NFA = {}
+# NFA = {}
 # Regex = "((a)(b))|((c)(d))"
 # try:
 #     re.compile(Regex)
