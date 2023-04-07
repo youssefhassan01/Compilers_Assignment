@@ -5,12 +5,14 @@ from utils import utils
 
 
 def checkUnique(list,elem):
+    #check if element is unique
     if(list.count(elem) >= 1):
         return False
     else:
         return True
 
 def stateEquality(stateList1,stateList2):
+    #checks if state is unique or not
     if len(stateList1) != len(stateList2):
         return False
     else:
@@ -25,9 +27,7 @@ def stateEquality(stateList1,stateList2):
                     break
             if not foundState:
                 return False
-            
         return True
-        
 
 
 # gets epsilon clsoure of passed state using allStates after conversion to json  
@@ -78,9 +78,82 @@ def stateMaker(stateList,alphabet,DFA,isStartState=False):
     #     DFA["startingState"] = "S0"
     # counter+=1
     return newState
+
+def dfaNoConnection(bigStateList):
+    statesQueue = Queue(maxsize = 0)
+    statesQueue.put(bigStateList[0])
+    while not statesQueue.empty():
+        currState = statesQueue.get()
+        currStateList = currState["stateList"]
+        for c in alphabet:
+            newStateList = []
+            for state in currStateList:
+                newStateListInput = move(state,c,allStates)
+                for x in newStateListInput:
+                    if x not in newStateList:
+                        newStateList.append(x)
+            newStateList = stateMaker(newStateList,alphabet,DFA,False)
+            if len(newStateList["stateList"]) == 0:
+                continue
+            stateExists = False
+            for s in bigStateList: #checks if we found this state before
+                if stateEquality(s["stateList"],newStateList["stateList"]) == True:
+                    stateExists = True
+                    break
+            if not stateExists: # checks if we are adding this new state or not
+                bigStateList.append(newStateList) # newStateList by this point contains the big State
+                statesQueue.put(newStateList)
+
+def dfaConnectorAndFormatter(bigStateList):
+    counter = 0
+    # Creates New Names for New states
+    for state in bigStateList:
+        state["stateName"] = "S" + str(counter)
+        counter += 1
+    # embbeds stateNames into each state for later use 
+    bigStateListstates = dict()
+    for state in bigStateList:
+        currStateList = state["stateList"]
+        reqState = list()
+        for s in currStateList:
+            for k , v in s.items():
+                reqState.append(k)
+        # this dictionary gives you bigstate as a key and its value are the NFA states contained inside for easier access
+        bigStateListstates[state["stateName"]]=reqState
+    # find which input allows you to go to a desired state
+    for state in bigStateList:
+        currStateList = state['stateList']
+        for s in currStateList:
+            # accesses stateList and splits keys and values to allow access  
+            for k,v in s.items():
+                for c in alphabet:
+                    if c in v:
+                        reqState = v[c][0]
+                        # finds which input leads to which state
+                        for i,j in bigStateListstates.items():
+                            if reqState in j:
+                                state[c] = i
+    # marks which states are terminal
+    for state in bigStateList:
+        currStateList = state['stateList']
+        for s in currStateList:
+            for k, v in s.items():
+                if v['isTerminalState'] == True:
+                    state['isTerminalState'] = True
+                else:
+                    state['isTerminalState'] = False
+    # remove stateList and make stateName the key in the final Dictionary
+    bigStateDict = dict()
+    for s in bigStateList:
+        del s['stateList']
+        bigStateDict[s['stateName']] = s
+    # Removes embbeded statName in the value
+    for k,v in bigStateDict.items():
+        del v['stateName']
+    return bigStateDict
 #NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory  
 
-regex="(a|b)"
+regex="(a|b)*"
 
 alphabet = []
 # rudimentary system to get alphabet of regex
@@ -89,80 +162,29 @@ for c in regex:
         if checkUnique(alphabet,c) == True:
             alphabet.append(c)
 
+# make NFA from part1
 adam=thomNFA.makeNFA(regex)
 allStatesJSON = utils.convertAllstates(thomNFA.AllStates)
-
 allStates = utils.convertAllstatestoReg(allStatesJSON)
 
+
 utils.drawNFA(allStatesJSON,"NFA")
-
 DFA = dict()
-
 startingState = allStates.get("startingState")
 
+# initialise first State
 initState = epsilonClosure({startingState:allStates.get(startingState)},allStates)
-for s in initState:
-    print(s)
 initState = stateMaker(initState,alphabet,DFA,True) # initState by this point contains the big State
 bigStateList = [initState]
 
-statesQueue = Queue(maxsize = 0)
-statesQueue.put(initState)
+dfaNoConnection(bigStateList)
 
-while not statesQueue.empty():
-    currState = statesQueue.get()
-    currStateList = currState["stateList"]
-    for c in alphabet:
-        newStateList = []
-        for state in currStateList:
-            newStateListInput = move(state,c,allStates)
-            for x in newStateListInput:
-                if x not in newStateList:
-                    newStateList.append(x)
-        newStateList = stateMaker(newStateList,alphabet,DFA,False)
-        if len(newStateList["stateList"]) == 0:
-            continue
-        stateExists = False
-        for s in bigStateList: #checks if we found this state before
-            if stateEquality(s["stateList"],newStateList["stateList"]) == True:
-                stateExists = True
-                break
-        if not stateExists: # checks if we are adding this new state or not
-            bigStateList.append(newStateList) # newStateList by this point contains the big State
-            statesQueue.put(newStateList)
+DFA=dfaConnectorAndFormatter(bigStateList)
 
-counter = 0
-for state in bigStateList:
-    state["stateName"] = "S" + str(counter)
-    counter += 1
-
-bigStateListstates = dict()
-for state in bigStateList:
-    currStateList = state["stateList"]
-    reqState = list()
-    for s in currStateList:
-        for k , v in s.items():
-            reqState.append(k)
-    bigStateListstates[state["stateName"]]=reqState
-
-for state in bigStateList:
-    currStateList = state['stateList']
-    for s in currStateList:
-        for k,v in s.items():
-            for c in alphabet:
-                if c in v:
-                    reqState = v[c][0]
-                    for i,j in bigStateListstates.items():
-                        if reqState in j:
-                            state[c] = i
-
-
-
-
-
-print("bigStateList is :")
-for s in bigStateList:
+print("bigState is :")
+for s,v in DFA.items():
     print(s)
+    print(v)
 
 
 
