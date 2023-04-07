@@ -31,7 +31,7 @@ def stateEquality(stateList1,stateList2):
 
 
 # gets epsilon clsoure of passed state using allStates after conversion to json  
-def epsilonClosure(state,allStates,isStart=True):
+def epsilonClosure(state,allStates):
     newState = list()
     findEpsilon = Queue(maxsize=0)
     # Split passed state to key and value and add to Queue
@@ -40,8 +40,7 @@ def epsilonClosure(state,allStates,isStart=True):
     value = list(state.values())
     value = value[0]
     findEpsilon.put(value)
-    if isStart == True:
-        newState.append(state)
+    newState.append(state)
     while not findEpsilon.empty():
         # walk through each state in epsilon of current state if any epsilon list exists
         x = findEpsilon.get()
@@ -63,7 +62,7 @@ def move(state,char,allStates):
         if char in value:
             nextState = value
             for i in nextState[char]:
-                stateList = epsilonClosure({i:allStates.get(i)},allStates,False)
+                stateList = epsilonClosure({i:allStates.get(i)},allStates)
     return stateList
 
 def stateMaker(stateList,alphabet,DFA,isStartState=False):
@@ -103,27 +102,39 @@ startingState = allStates.get("startingState")
 initState = epsilonClosure({startingState:allStates.get(startingState)},allStates)
 for s in initState:
     print(s)
-initState = stateMaker(initState,alphabet,DFA,True)
+initState = stateMaker(initState,alphabet,DFA,True) # initState by this point contains the big State
+bigStateList = [initState]
 
 statesQueue = Queue(maxsize = 0)
-
 statesQueue.put(initState)
 
 while not statesQueue.empty():
+    currState = statesQueue.get()
+    currStateList = currState["stateList"]
     for c in alphabet:
         newStateList = []
-        currState = statesQueue.get()
-        currStateList = currState["stateList"]
-        
         for state in currStateList:
             newStateListInput = move(state,c,allStates)
             for x in newStateListInput:
                 if x not in newStateList:
                     newStateList.append(x)
-        
-        for s in DFA:
-            if stateEquality(s["stateList"],newStateList) == False:
-                print("amogus")
+        newStateList = stateMaker(newStateList,alphabet,DFA,False)
+        if len(newStateList["stateList"]) == 0:
+            continue
+        stateExists = False
+        for s in bigStateList: #checks if we found this state before
+            if stateEquality(s["stateList"],newStateList["stateList"]) == True:
+                stateExists = True
+                break
+        if not stateExists: # checks if we are adding this new state or not
+            bigStateList.append(newStateList) # newStateList by this point contains the big State
+            statesQueue.put(newStateList)
+            
+print("bigStateList is :")
+
+
+for s in bigStateList:
+    print(s)
 
 
 
