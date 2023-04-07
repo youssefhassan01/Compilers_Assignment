@@ -2,11 +2,32 @@ import part1 as thomNFA
 from queue import Queue
 from utils import utils
 
+counter = 0
+
 def checkUnique(list,elem):
     if(list.count(elem) >= 1):
         return False
     else:
         return True
+
+def stateEquality(stateList1,stateList2):
+    if len(stateList1) != len(stateList2):
+        return False
+    else:
+        for i in range(len(stateList1)):
+            foundState = False
+            state1name = list(stateList1[i].keys())[0]
+            print(state1name)
+            for j in range(len(stateList2)):
+                state2name = list(stateList2[j].keys())[0]
+                if(state1name == state2name):
+                    foundState = True
+                    break
+            if not foundState:
+                return False
+            
+        return True
+        
 
 
 # gets epsilon clsoure of passed state using allStates after conversion to json  
@@ -34,29 +55,75 @@ def epsilonClosure(state,allStates,isStart=True):
     #returns all states in this epsilon closure
     return newState
 
-#TODO: function that accepts all alphabets and check for their epsilon closure
-#TODO: function that assembles DFA states !!! don't do this alone ya joe
 
+def move(state,char,allStates):
+    # allStates is in Required format
+    stateList=[]
+    for key,value in state.items():
+        if char in value:
+            nextState = value
+            for i in nextState[char]:
+                stateList = epsilonClosure({i:allStates.get(i)},allStates,False)
+    return stateList
+
+def stateMaker(stateList,alphabet,DFA,isStartState=False):
+    # global counter
+    newState = dict()
+    newState["stateList"]=stateList
+    
+    for c in alphabet:
+        newState[c]=""
+    # newState = {"S" + str(counter) : newState}
+    # DFA.update(newState)
+    # if(isStartState == True):
+    #     DFA["startingState"] = "S0"
+    # counter+=1
+    return newState
 #NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory  
 
 regex="(a|b)"
-adam=thomNFA.makeNFA(regex)
 
 alphabet = []
-
-allStates = utils.convertAllstates(thomNFA.AllStates)
-utils.drawNFA(allStates,"NFA")
-
 # rudimentary system to get alphabet of regex
-# for c in regex:
-#     if(c.isalnum()):
-#         alphabet.append(c)
+for c in regex:
+    if(c.isalnum()):
+        alphabet.append(c)
+
+adam=thomNFA.makeNFA(regex)
+allStatesJSON = utils.convertAllstates(thomNFA.AllStates)
+
+allStates = utils.convertAllstatestoReg(allStatesJSON)
+
+utils.drawNFA(allStatesJSON,"NFA")
+
+DFA = dict()
 
 startingState = allStates.get("startingState")
 
-initState=epsilonClosure({startingState:allStates.get(startingState)},allStates)
+initState = epsilonClosure({startingState:allStates.get(startingState)},allStates)
+for s in initState:
+    print(s)
+initState = stateMaker(initState,alphabet,DFA,True)
 
-print(initState)
+statesQueue = Queue(maxsize = 0)
+
+statesQueue.put(initState)
+
+while not statesQueue.empty():
+    for c in alphabet:
+        newStateList = []
+        currState = statesQueue.get()
+        currStateList = currState["stateList"]
+        
+        for state in currStateList:
+            newStateListInput = move(state,c,allStates)
+            for x in newStateListInput:
+                if x not in newStateList:
+                    newStateList.append(x)
+        
+        for s in DFA:
+            if stateEquality(s["stateList"],newStateList) == False:
+                print("amogus")
 
 
 

@@ -463,7 +463,7 @@ def makeNFA(regexInput):
 #     print(s)
 # AllStatesJSON = utils.convertAllstates(AllStates)
 # utils.drawNFA(AllStatesJSON, "NFA")
-makeNFA("(((a)(b)|(d))|(c))")
+# makeNFA("(((a)(b)|(d))|(c))")
 # makeNFA("abc")
 # makeNFA("ab|cd")
 # makeNFA("((a)(b)|(c)(d))")
@@ -473,17 +473,17 @@ makeNFA("(((a)(b)|(d))|(c))")
 # for s in AllStates:
 #     print(s)
 
-AllStatesJSON = utils.convertAllstates(AllStates)
-AllStatesReq = utils.convertAllstatestoReg(AllStatesJSON)
-# utils.drawNFA(AllStatesJSON, "NFA")
-# print('AllStatesJSON', AllStatesJSON)
-# print('AllStatesJSON')
-# for mystate, stateinfo in AllStatesJSON.items():
-#     print(mystate, stateinfo)
-print('AllStatesRequiredForm')
-print('AllStatesRequiredForm')
-for mystate, stateInfo in AllStatesReq.items():
-    print(mystate, stateInfo)
+# AllStatesJSON = utils.convertAllstates(AllStates)
+# AllStatesReq = utils.convertAllstatestoReg(AllStatesJSON)
+# # utils.drawNFA(AllStatesJSON, "NFA")
+# # print('AllStatesJSON', AllStatesJSON)
+# # print('AllStatesJSON')
+# # for mystate, stateinfo in AllStatesJSON.items():
+# #     print(mystate, stateinfo)
+# print('AllStatesRequiredForm')
+# print('AllStatesRequiredForm')
+# for mystate, stateInfo in AllStatesReq.items():
+#     print(mystate, stateInfo)
 # for mystate in AllStatesJSON.items():
 #     print(mystate[0])
 
