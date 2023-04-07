@@ -2,7 +2,7 @@ import part1 as thomNFA
 from queue import Queue
 from utils import utils
 
-counter = 0
+
 
 def checkUnique(list,elem):
     if(list.count(elem) >= 1):
@@ -72,7 +72,7 @@ def stateMaker(stateList,alphabet,DFA,isStartState=False):
     
     for c in alphabet:
         newState[c]=""
-    # newState = {"S" + str(counter) : newState}
+    # newState = { : newState}
     # DFA.update(newState)
     # if(isStartState == True):
     #     DFA["startingState"] = "S0"
@@ -86,7 +86,8 @@ alphabet = []
 # rudimentary system to get alphabet of regex
 for c in regex:
     if(c.isalnum()):
-        alphabet.append(c)
+        if checkUnique(alphabet,c) == True:
+            alphabet.append(c)
 
 adam=thomNFA.makeNFA(regex)
 allStatesJSON = utils.convertAllstates(thomNFA.AllStates)
@@ -129,13 +130,39 @@ while not statesQueue.empty():
         if not stateExists: # checks if we are adding this new state or not
             bigStateList.append(newStateList) # newStateList by this point contains the big State
             statesQueue.put(newStateList)
-            
+
+counter = 0
+for state in bigStateList:
+    state["stateName"] = "S" + str(counter)
+    counter += 1
+
+bigStateListstates = dict()
+for state in bigStateList:
+    currStateList = state["stateList"]
+    reqState = list()
+    for s in currStateList:
+        for k , v in s.items():
+            reqState.append(k)
+    bigStateListstates[state["stateName"]]=reqState
+
+for state in bigStateList:
+    currStateList = state['stateList']
+    for s in currStateList:
+        for k,v in s.items():
+            for c in alphabet:
+                if c in v:
+                    reqState = v[c][0]
+                    for i,j in bigStateListstates.items():
+                        if reqState in j:
+                            state[c] = i
+
+
+
+
+
 print("bigStateList is :")
-
-
 for s in bigStateList:
     print(s)
-
 
 
 
