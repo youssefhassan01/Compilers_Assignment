@@ -20,7 +20,7 @@ class utils:
                         newstate[key] = value
                     else:
                         # stateInfo[key] = list(value)
-                        newstate[value] = key
+                        newstate[value] = [key]
                     # print('new state info', newstate)
                 newStatesDict[state] = newstate
             # else:
