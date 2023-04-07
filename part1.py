@@ -13,7 +13,7 @@ class state:
         self.stateDict = dict()
         self.stateDict["isTerminalState"] = tState
         self.name = "S" + str(state.counter)
-        print('my name is ', self.name)
+        # print('my name is ', self.name)
         # if (state.counter == 0):
         #     self.stateDict["isStartingState"] = 1
 
@@ -23,7 +23,7 @@ class state:
 
     # def __iter__(self):
     #     return self
-    
+
     # def __next__(self):
     #     if self.currIndex > self.stateNum:
     #         raise StopIteration
@@ -186,8 +186,8 @@ def preprocessrangeclasses(regexInput):
             convertedexp, newdiff = convertRangeClass(
                 regexInput[i+1:i+bracketendind])
 
-            print('first part is ', result[:i+rescounter])
-            print('second part is ', result[i+rescounter+bracketendind+1:])
+            # print('first part is ', result[:i+rescounter])
+            # print('second part is ', result[i+rescounter+bracketendind+1:])
             # remove the first[
             result = result[:i+rescounter] + convertedexp + \
                 result[i+rescounter+bracketendind+1:]  # +1 for ]
@@ -222,7 +222,7 @@ def preprocess(regexInput):
             cuttingindex = i+rescounter+1
             result = result[:cuttingindex] + '.' + result[cuttingindex:]
             rescounter += 1
-            print('result now is ', result)
+            # print('result now is ', result)
         # if c is a letter
 
         elif c.isalnum() and (v.isalnum() or v in '(['):
@@ -231,10 +231,10 @@ def preprocess(regexInput):
             result = result[:cuttingindex] + '.' + result[cuttingindex:]
             rescounter += 1
         i += 1
-    print('first stage of processing result is', result)
+    # print('first stage of processing result is', result)
     # removes [] from the regex and replaces them with their equivalent ORed values
     result = preprocessrangeclasses(result)
-    print('final result is ', result)
+    # print('final result is ', result)
     return result
 
 # region test
@@ -408,7 +408,7 @@ def pipeLogic():
 
 def concatLogic():
     global superstate_stack
-    #print("Handling Concat logic")
+    # print("Handling Concat logic")
     ss2 = superstate_stack.pop()
     ss1 = superstate_stack.pop()
     # if (ss2.startState.stateDict.get(ss2.endState.name)):
@@ -463,7 +463,7 @@ def makeNFA(regexInput):
 #     print(s)
 # AllStatesJSON = utils.convertAllstates(AllStates)
 # utils.drawNFA(AllStatesJSON, "NFA")
-# makeNFA("(((a)(b)|(d))|(c))")
+makeNFA("(((a)(b)|(d))|(c))")
 # makeNFA("abc")
 # makeNFA("ab|cd")
 # makeNFA("((a)(b)|(c)(d))")
@@ -473,9 +473,17 @@ def makeNFA(regexInput):
 # for s in AllStates:
 #     print(s)
 
-# AllStatesJSON = utils.convertAllstates(AllStates)
+AllStatesJSON = utils.convertAllstates(AllStates)
+AllStatesReq = utils.convertAllstatestoReg(AllStatesJSON)
 # utils.drawNFA(AllStatesJSON, "NFA")
 # print('AllStatesJSON', AllStatesJSON)
+# print('AllStatesJSON')
+# for mystate, stateinfo in AllStatesJSON.items():
+#     print(mystate, stateinfo)
+print('AllStatesRequiredForm')
+print('AllStatesRequiredForm')
+for mystate, stateInfo in AllStatesReq.items():
+    print(mystate, stateInfo)
 # for mystate in AllStatesJSON.items():
 #     print(mystate[0])
 

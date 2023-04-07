@@ -5,6 +5,31 @@ class utils:
 
     # converts all states to the required format
     @staticmethod
+    def convertAllstatestoReg(allStates):
+        newStatesDict = {}
+        print(allStates['startingState'])
+
+        newStatesDict['startingState'] = allStates['startingState']
+        # print(newStatesDict)
+        for state in allStates:
+            if (state != 'startingState'):
+                stateInfo = allStates[state]
+                newstate = dict()
+                for key, value in stateInfo.items():
+                    if key == 'isTerminalState' or key == 'epsilon':
+                        newstate[key] = value
+                    else:
+                        # stateInfo[key] = list(value)
+                        newstate[value] = key
+                    # print('new state info', newstate)
+                newStatesDict[state] = newstate
+            # else:
+            #     print('found starting state, its value is ', allStates[state])
+
+        return newStatesDict
+
+    # converts all states to an intermediate format
+    @ staticmethod
     def convertAllstates(allStates):
         allStatesDict = {}
         for state in allStates:
@@ -16,7 +41,7 @@ class utils:
 
         return allStatesDict
 
-    @staticmethod
+    @ staticmethod
     def drawNFA(allStatesJSON, drawingName="NFA Visualization"):
         nfa_states = set(
             mystate for mystate in allStatesJSON if (mystate != "startingState"))
@@ -37,10 +62,10 @@ class utils:
                 del stateinfo['isTerminalState']
         nfa_initial_state = allStatesJSON["startingState"]
         nfa_transitions = {}
-        print('statesTuples before ', statesTuples)
+        # print('statesTuples before ', statesTuples)
         for statename, stateinfo in statesTuples:
-            print('statename and stateinfo are')
-            print(statename, stateinfo)
+            # print('statename and stateinfo are')
+            # print(statename, stateinfo)
             nfa_transitions[statename] = {
                 value: {key} for key, value in stateinfo.items() if key != 'epsilon'}
             for key, value in stateinfo.items():
@@ -51,12 +76,12 @@ class utils:
                         else:
                             nfa_transitions[statename][""].add(epsilonState)
 
-        print('state tuples ', statesTuples)
-        print('nfa_states', nfa_states)
-        print('nfa_inputs', nfa_input_symbols)
-        print('nfa_trans', nfa_transitions)
-        print('nfa_init', nfa_initial_state)
-        print('nfa_finals', nfa_final_states)
+        # print('state tuples ', statesTuples)
+        # print('nfa_states', nfa_states)
+        # print('nfa_inputs', nfa_input_symbols)
+        # print('nfa_trans', nfa_transitions)
+        # print('nfa_init', nfa_initial_state)
+        # print('nfa_finals', nfa_final_states)
 
         automata2 = NFA(nfa_states, nfa_input_symbols,
                         nfa_transitions, nfa_initial_state, nfa_final_states)
