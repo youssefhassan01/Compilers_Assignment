@@ -121,10 +121,11 @@ def makeDFA(bigStateList):
 def dfaFormatter(bigStateList):
     counter = 0
     # sanitize statename
-
     for state in bigStateList:
         state['bigStateName'] = "S" + str(counter)
         counter += 1
+        print(state)
+
     # marks which states are terminal
     for state in bigStateList:
         currStateList = state['stateList']
@@ -141,12 +142,20 @@ def dfaFormatter(bigStateList):
                 break
     # remove stateList and make stateName the key in the final Dictionary
     bigStateDict = dict()
+    # adds startingState to get the right format
+    # print(bigStateList)
+    for state in bigStateList:
+        if state.get('isStartingState') and state['isStartingState'] == True:
+            bigStateDict['startingState'] = state['bigStateName']
+            break
     for s in bigStateList:
         del s['stateList']
         bigStateDict[s['bigStateName']] = s
     # Removes embbeded statName in the value
     for k, v in bigStateDict.items():
-        del v['bigStateName']
+        if k != 'startingState':
+            del v['bigStateName']
+
     return bigStateDict
 # NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory
 
@@ -176,6 +185,7 @@ def minimise(currStates, DFA, alphabet):
     # update starting state before merging
     newStartingState = ""
     for state in currStates:
+        # print('mysate is ', state)
         foundStart = False
         for k, v in state.items():
             if k == DFA['startingState']:
@@ -198,9 +208,9 @@ def minimise(currStates, DFA, alphabet):
     return mergedState, splitState, newStartingState
 
 
-# regex = "(a|b)"
+regex = "(a|b)"
 # regex = "(a|b)*"
-regex = "(a|b)*abb"
+# regex = "(a|b)*abb"
 
 alphabet = []
 # rudimentary system to get alphabet of regex
@@ -245,29 +255,29 @@ for key, value in DFA.items():
 nonTerminalStates = []
 TerminalStates = []
 for k, v in DFA.items():
-    if v['isTerminalState'] == True:
+    if k != 'startingState' and v['isTerminalState'] == True:
         TerminalStates.append({k: v})
     else:
         nonTerminalStates.append({k: v})
 
-# mergedNonTerminal, splitNonTerminal, newStartingStateTerm = minimise(
-#     nonTerminalStates, DFA, alphabet)
-# mergedTerminal, splitTerminal, newStartingStateNonTerm = minimise(
-#     TerminalStates, DFA, alphabet)
+mergedNonTerminal, splitNonTerminal, newStartingStateTerm = minimise(
+    nonTerminalStates, DFA, alphabet)
+mergedTerminal, splitTerminal, newStartingStateNonTerm = minimise(
+    TerminalStates, DFA, alphabet)
 
-# minimisedDFA = dict()
+minimisedDFA = dict()
 
-# if newStartingStateTerm != "":
-#     minimisedDFA["startingState"] = newStartingStateTerm
-# elif newStartingStateNonTerm != "":
-#     minimisedDFA["startingState"] = newStartingStateNonTerm
-# else:
-#     minimisedDFA["startingState"] = DFA["startingState"]
+if newStartingStateTerm != "":
+    minimisedDFA["startingState"] = newStartingStateTerm
+elif newStartingStateNonTerm != "":
+    minimisedDFA["startingState"] = newStartingStateNonTerm
+else:
+    minimisedDFA["startingState"] = DFA["startingState"]
 
-# for s in splitNonTerminal:
-#     minimisedDFA.update(s)
-# for s in splitTerminal:
-#     minimisedDFA.update(s)
+for s in splitNonTerminal:
+    minimisedDFA.update(s)
+for s in splitTerminal:
+    minimisedDFA.update(s)
 
-# minimisedDFA.update(mergedNonTerminal)
-# minimisedDFA.update(mergedTerminal)
+minimisedDFA.update(mergedNonTerminal)
+minimisedDFA.update(mergedTerminal)
