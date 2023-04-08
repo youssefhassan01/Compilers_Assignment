@@ -194,7 +194,28 @@ for k,v in DFA.items():
     else:
         nonTerminalStates.append({k:v})
 
+minimiseQueue = Queue(maxsize=0)
+if len(TerminalStates) != 0:
+    minimiseQueue.put(TerminalStates[0])
 
+counter = 0
+while not minimiseQueue.empty():
+    currState = minimiseQueue.get()
+    for c in alphabet:
+        value=list(currState.values())[0]
+        if c in value:
+            comparisonState = value[c]
+            for s in TerminalStates:
+                for k,v in s.items():
+                    if c in v:
+                        if comparisonState != v[c]:
+                            splitState = currState
+                            TerminalStates.remove(currState)
+                            counter = 0
+                            minimiseQueue.put(TerminalStates[counter])
+
+
+print("amogus")
 
 
 
