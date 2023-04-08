@@ -160,55 +160,95 @@ def dfaFormatter(bigStateList):
 # NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory
 
 
-def minimise(currStates, DFA, alphabet):
-    minimiseQueue = Queue(maxsize=0)
-    if len(currStates) != 0:
-        minimiseQueue.put(currStates[0])
+# def minimise(currStates, DFA, alphabet):
+#     minimiseQueue = Queue(maxsize=0)
+#     if len(currStates) != 0:
+#         minimiseQueue.put(currStates[0])
 
+#     counter = 0
+#     splitState = []
+#     while not minimiseQueue.empty():
+#         # split nonsimilar states into seperate entites
+#         currState = minimiseQueue.get()
+#         for c in alphabet:
+#             value = list(currState.values())[0]
+#             if c in value:
+#                 comparisonState = value[c]
+#                 for s in currStates:
+#                     for k, v in s.items():
+#                         if c in v:
+#                             if comparisonState != v[c]:
+#                                 splitState.append(currState)
+#                                 currStates.remove(currState)
+#                                 counter = 0
+#                                 minimiseQueue.put(currStates[counter])
+#     # update starting state before merging
+#     newStartingState = ""
+#     for state in currStates:
+#         # print('mysate is ', state)
+#         foundStart = False
+#         for k, v in state.items():
+#             if k == DFA['startingState']:
+#                 newStartingState = list(currStates[0].keys())[0]
+#                 foundStart = True
+#                 break
+#         if foundStart == True:
+#             break
+#     # update connection of split states before merging merged states
+#     for state in splitState:
+#         for k, v in state.items():
+#             for c in alphabet:
+#                 if c in v:
+#                     reqState = v[c]
+#                 for s in currStates:
+#                     for i, j in s.items():
+#                         if reqState == i:
+#                             v[c] = list(currStates[0].keys())[0]
+#     mergedState = currStates[0]
+#     return mergedState, splitState, newStartingState
+
+def minimise(DFAlist, alphabet):
+    stateQueue = []
     counter = 0
-    splitState = []
-    while not minimiseQueue.empty():
-        # split nonsimilar states into seperate entites
-        currState = minimiseQueue.get()
-        for c in alphabet:
-            value = list(currState.values())[0]
-            if c in value:
-                comparisonState = value[c]
-                for s in currStates:
-                    for k, v in s.items():
-                        if c in v:
-                            if comparisonState != v[c]:
-                                splitState.append(currState)
-                                currStates.remove(currState)
-                                counter = 0
-                                minimiseQueue.put(currStates[counter])
-    # update starting state before merging
-    newStartingState = ""
-    for state in currStates:
-        # print('mysate is ', state)
-        foundStart = False
-        for k, v in state.items():
-            if k == DFA['startingState']:
-                newStartingState = list(currStates[0].keys())[0]
-                foundStart = True
-                break
-        if foundStart == True:
-            break
-    # update connection of split states before merging merged states
-    for state in splitState:
-        for k, v in state.items():
-            for c in alphabet:
-                if c in v:
-                    reqState = v[c]
-                for s in currStates:
-                    for i, j in s.items():
-                        if reqState == i:
-                            v[c] = list(currStates[0].keys())[0]
-    mergedState = currStates[0]
-    return mergedState, splitState, newStartingState
+    stateQueue.append(DFAlist[counter])
+    while stateQueue:
+        currState = stateQueue.pop(0)
+        currStateValue = currState[1] 
+        similarStates = []
+        for state in DFAlist:
+                areSameState = True
+                for c in alphabet:
+                    if state[0] == currState[0]:
+                        break
+                    elif state[1][c] != currStateValue[c] or state[1]['isTerminalState'] != currStateValue['isTerminalState']:
+                        areSameState = False
+                        break
+                if areSameState == True:
+                    similarStates.append(state)
+                else:
+                    if not state in stateQueue: 
+                        stateQueue.append(state)
+        if similarStates:
+            if len(similarStates) > 1:
+                for s in DFAlist:
+                    if s in similarStates:
+                        DFAlist.remove(s)
+                newValue = dict() 
+                for c in alphabet:
+                    for state in similarStates:
+                        if state[0] != similarStates[0][0]: 
+                            if similarStates[0][1][c] == state[0]:
+                                newValue[c] = similarStates[0][0]
+                            else:
+                                newValue[c] = similarStates[0][1][c]
+                newValue['isTerminalState'] = similarStates[0][1]['isTerminalState']
+                if "isStartingState" in similarStates[0][1]:
+                    newValue['isStartingState'] = similarStates[0][1]['isStartingState']
+                newState = (similarStates[0][0],newValue)
+                DFAlist.append(newState)
 
 
-regex = "(a|b)"
+regex = "(a|b)*abb"
 # regex = "(a|b)*"
 # regex = "(a|b)*abb"
 
@@ -252,32 +292,36 @@ for key, value in DFA.items():
 
 
 # minimization
-nonTerminalStates = []
-TerminalStates = []
-for k, v in DFA.items():
-    if k != 'startingState' and v['isTerminalState'] == True:
-        TerminalStates.append({k: v})
-    else:
-        nonTerminalStates.append({k: v})
+# nonTerminalStates = []
+# TerminalStates = []
+# for k, v in DFA.items():
+#     if k != 'startingState' and v['isTerminalState'] == True:
+#         TerminalStates.append({k: v})
+#     else:
+#         nonTerminalStates.append({k: v})
 
-mergedNonTerminal, splitNonTerminal, newStartingStateTerm = minimise(
-    nonTerminalStates, DFA, alphabet)
-mergedTerminal, splitTerminal, newStartingStateNonTerm = minimise(
-    TerminalStates, DFA, alphabet)
+# mergedNonTerminal, splitNonTerminal, newStartingStateTerm = minimise(
+#     nonTerminalStates, DFA, alphabet)
+# mergedTerminal, splitTerminal, newStartingStateNonTerm = minimise(
+#     TerminalStates, DFA, alphabet)
 
-minimisedDFA = dict()
+# minimisedDFA = dict()
 
-if newStartingStateTerm != "":
-    minimisedDFA["startingState"] = newStartingStateTerm
-elif newStartingStateNonTerm != "":
-    minimisedDFA["startingState"] = newStartingStateNonTerm
-else:
-    minimisedDFA["startingState"] = DFA["startingState"]
+# if newStartingStateTerm != "":
+#     minimisedDFA["startingState"] = newStartingStateTerm
+# elif newStartingStateNonTerm != "":
+#     minimisedDFA["startingState"] = newStartingStateNonTerm
+# else:
+#     minimisedDFA["startingState"] = DFA["startingState"]
 
-for s in splitNonTerminal:
-    minimisedDFA.update(s)
-for s in splitTerminal:
-    minimisedDFA.update(s)
+# for s in splitNonTerminal:
+#     minimisedDFA.update(s)
+# for s in splitTerminal:
+#     minimisedDFA.update(s)
 
-minimisedDFA.update(mergedNonTerminal)
-minimisedDFA.update(mergedTerminal)
+# minimisedDFA.update(mergedNonTerminal)
+# minimisedDFA.update(mergedTerminal)
+DFAlist = list(DFA.items())
+startingStateReserve = DFAlist[0]
+DFAlist.remove(DFAlist[0])
+minimise(DFAlist,alphabet)
