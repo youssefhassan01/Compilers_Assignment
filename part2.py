@@ -137,11 +137,16 @@ def dfaConnectorAndFormatter(bigStateList):
     for state in bigStateList:
         currStateList = state['stateList']
         for s in currStateList:
+            foundState = False
             for k, v in s.items():
                 if v['isTerminalState'] == True:
                     state['isTerminalState'] = True
+                    foundState = True
+                    break
                 else:
                     state['isTerminalState'] = False
+            if foundState == True:
+                break
     # remove stateList and make stateName the key in the final Dictionary
     bigStateDict = dict()
     for s in bigStateList:
@@ -153,7 +158,7 @@ def dfaConnectorAndFormatter(bigStateList):
     return bigStateDict
 #NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory  
 
-regex="(a|b)*"
+regex="(a|b)"
 
 alphabet = []
 # rudimentary system to get alphabet of regex
@@ -178,13 +183,19 @@ initState = stateMaker(initState,alphabet,DFA,True) # initState by this point co
 bigStateList = [initState]
 
 dfaNoConnection(bigStateList)
-
 DFA=dfaConnectorAndFormatter(bigStateList)
 
-print("bigState is :")
-for s,v in DFA.items():
-    print(s)
-    print(v)
+nonTerminalStates = []
+TerminalStates = []
+
+for k,v in DFA.items():
+    if v['isTerminalState'] == True:
+        TerminalStates.append({k:v})
+    else:
+        nonTerminalStates.append({k:v})
+
+
+
 
 
 
