@@ -3,8 +3,6 @@ from queue import Queue
 from utils import utils
 
 
-
-
 def checkUnique(list, elem):
     # check if element is unique
     if (list.count(elem) >= 1):
@@ -122,11 +120,17 @@ def makeDFA(bigStateList):
 
 def dfaFormatter(bigStateList):
     counter = 0
+    Statenamesdict = dict()
     # sanitize statename
+    # print('bigStateList: ', bigStateList)
     for state in bigStateList:
+        oldStateName = state['bigStateName']
+        Statenamesdict[oldStateName] = "S" + str(counter)
         state['bigStateName'] = "S" + str(counter)
         counter += 1
-        print(state)
+        # an update all old references to new state name will happen later
+
+        # print(state)
 
     # marks which states are terminal
     for state in bigStateList:
@@ -157,11 +161,16 @@ def dfaFormatter(bigStateList):
     for k, v in bigStateDict.items():
         if k != 'startingState':
             del v['bigStateName']
-
+    # update all old references to new state name
+    for k, v in bigStateDict.items():
+        if k != 'startingState':
+            for c in alphabet:
+                if c in v:
+                    v[c] = Statenamesdict[v[c]]
     return bigStateDict
 # NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory
 
-
+# region old code
 # def minimise(DFAlist, alphabet):
 #     minimiseQueue = Queue(maxsize=0)
 #     if len(currStates) != 0:
@@ -215,7 +224,7 @@ def dfaFormatter(bigStateList):
 #     change = True
 #     while stateQueue and change:
 #         currState = stateQueue.pop(0)
-#         currStateValue = currState[1] 
+#         currStateValue = currState[1]
 #         similarStates = []
 #         for state in DFAlist:
 #                 areSameState = True
@@ -235,7 +244,7 @@ def dfaFormatter(bigStateList):
 #                 for s in DFAlist:
 #                     if s in similarStates:
 #                         DFAlist.remove(s)
-#                 newValue = dict() 
+#                 newValue = dict()
 #                 statesToBeConverted = []
 #                 for s in similarStates:
 #                     statesToBeConverted.append(s[0])
@@ -255,11 +264,85 @@ def dfaFormatter(bigStateList):
 #                     newValue['isStartingState'] = similarStates[0][1]['isStartingState']
 #                 newState = (similarStates[0][0],newValue)
 #                 DFAlist.append(newState)
+# endregion
 
- 
 
-def minimise(DFAlist,alphabet):
-    
+def getStatefromName(stateName):
+    global DFA
+    for k, v in DFA.items():
+        if k == stateName:
+            return {k: v}
+    return None
+
+# does this actually work ?
+
+
+def getnewState(state, char):
+    global allStates
+    for k, v in state.items():
+        if k != 'isStartingState' and k != 'isTerminalState' and char in v:
+            stateName = v[char]
+            return getStatefromName(stateName)
+
+    return None
+
+
+def getStateGroup(state, stateGroups):
+    for s in stateGroups:
+        for k, v in state.items():
+            if k != 'isStartingState' and k != 'isTerminalState' and k in s["statenames"]:
+                return s
+    return None
+
+
+def getStateName(state):
+    for k, v in state.items():
+        if k != 'isStartingState' and k != 'isTerminalState':
+            return k
+
+
+def minimise(stateGroups, alphabet):
+    oldStategroupSize = -1
+    while oldStategroupSize != len(stateGroups):
+        # StateGroups will be update in the loop so we need to make a copy of it
+        # but CurrentStateGroups will not be updated during it
+        currStateGroups = stateGroups.copy()
+        for stateGroup in currStateGroups:
+            # loop on each state in the state group
+            for state in stateGroup["states"]:
+                for c in alphabet:
+                    newState = getnewState(state, c)
+                    # get StateGroup of newState
+                    newState_stateGroup = getStateGroup(
+                        newState, stateGroups)
+                    if newState_stateGroup != stateGroup:  # ya rab el 7etta dee t4t8l
+                        # first check if there is another similar group to merge with  # I think we don't need this check?
+                        # make new state group
+                        newGroupofState = {"statenames": [getStateName(
+                            newState)], "states": [newState]}
+                        stateGroups.append(newGroupofState)
+                        # remove state from old group
+                        stateGroup["statenames"].remove(getStateName(newState))
+                        stateGroup["states"].remove(
+                            newState)  # ya rab dee t4t8l
+        oldStategroupSize = len(currStateGroups)
+
+        # if newState_stateGroup != None:
+        #     if newState_stateGroup != stateGroup:
+        #         stateGroups.remove(stateGroup)
+        #         stateGroups.remove(newState_stateGroup)
+        #         stateGroups.append(
+        #             {"statenames": stateGroup["statenames"] + newState_stateGroup["statenames"], "states": stateGroup["states"] + newState_stateGroup["states"]})
+        #         break
+        # for s in stateGroups:
+        #     if stateGroup != s:
+        #         if stateGroup[1][c] != s[1][c]:
+        #             stateGroups.remove(stateGroup)
+        #             stateGroups.remove(s)
+        #             stateGroups.append((stateGroup[0], s[0]))
+        #             break
+
+    pass
 
 
 regex = "(a|b)*abb"
@@ -305,40 +388,30 @@ for key, value in DFA.items():
     print(key, value)
 
 
+# let state group be of form {states: {{S1:bla bla}, {S2:bla bla}}, statenames: ["S1", "S2"]}
+
 # minimization
-nonTerminalStates = []
-TerminalStates = []
-# for k, v in DFA.items():
-#     if k != 'startingState' and v['isTerminalState'] == True:
-#         TerminalStates.append({k: v})
-#     else:
-#         nonTerminalStates.append({k: v})
-
-# mergedNonTerminal, splitNonTerminal, newStartingStateTerm = minimise(
-#     nonTerminalStates, DFA, alphabet)
-# mergedTerminal, splitTerminal, newStartingStateNonTerm = minimise(
-#     TerminalStates, DFA, alphabet)
-
-# minimisedDFA = dict()
-
-# if newStartingStateTerm != "":
-#     minimisedDFA["startingState"] = newStartingStateTerm
-# elif newStartingStateNonTerm != "":
-#     minimisedDFA["startingState"] = newStartingStateNonTerm
-# else:
-#     minimisedDFA["startingState"] = DFA["startingState"]
-
-# for s in splitNonTerminal:
-#     minimisedDFA.update(s)
-# for s in splitTerminal:
-#     minimisedDFA.update(s)
-
-# minimisedDFA.update(mergedNonTerminal)
-# minimisedDFA.update(mergedTerminal)
-DFAlist = list(DFA.items())
-startingStateReserve = DFAlist[0]
-DFAlist.remove(DFAlist[0])
-minimise(DFAlist,alphabet)
+nonTerminalStates = {"states": [], "statenames": []}
+TerminalStates = {"states": [], "statenames": []}
 
 
-print("amogus")
+for k, v in DFA.items():
+    if k != 'startingState' and v['isTerminalState'] == True:
+        TerminalStates["states"].append({k: v})
+        TerminalStates["statenames"].append(k)
+    else:
+        if k != 'startingState':
+            nonTerminalStates["states"].append({k: v})
+            nonTerminalStates["statenames"].append(k)
+
+# print('nonTerminalStates is: ', nonTerminalStates)
+# print('TerminalStates is: ', TerminalStates)
+
+# keda we have the starting 2 groups
+
+StateGroups = [nonTerminalStates, TerminalStates]
+
+minimise(StateGroups, alphabet)
+
+
+# print("amogus")
