@@ -3,6 +3,8 @@ from queue import Queue
 from utils import utils
 
 
+
+
 def checkUnique(list, elem):
     # check if element is unique
     if (list.count(elem) >= 1):
@@ -160,11 +162,10 @@ def dfaFormatter(bigStateList):
 # NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory
 
 
-# def minimise(currStates, DFA, alphabet):
+# def minimise(DFAlist, alphabet):
 #     minimiseQueue = Queue(maxsize=0)
 #     if len(currStates) != 0:
 #         minimiseQueue.put(currStates[0])
-
 #     counter = 0
 #     splitState = []
 #     while not minimiseQueue.empty():
@@ -207,45 +208,58 @@ def dfaFormatter(bigStateList):
 #     mergedState = currStates[0]
 #     return mergedState, splitState, newStartingState
 
-def minimise(DFAlist, alphabet):
-    stateQueue = []
-    counter = 0
-    stateQueue.append(DFAlist[counter])
-    while stateQueue:
-        currState = stateQueue.pop(0)
-        currStateValue = currState[1] 
-        similarStates = []
-        for state in DFAlist:
-                areSameState = True
-                for c in alphabet:
-                    if state[0] == currState[0]:
-                        break
-                    elif state[1][c] != currStateValue[c] or state[1]['isTerminalState'] != currStateValue['isTerminalState']:
-                        areSameState = False
-                        break
-                if areSameState == True:
-                    similarStates.append(state)
-                else:
-                    if not state in stateQueue: 
-                        stateQueue.append(state)
-        if similarStates:
-            if len(similarStates) > 1:
-                for s in DFAlist:
-                    if s in similarStates:
-                        DFAlist.remove(s)
-                newValue = dict() 
-                for c in alphabet:
-                    for state in similarStates:
-                        if state[0] != similarStates[0][0]: 
-                            if similarStates[0][1][c] == state[0]:
-                                newValue[c] = similarStates[0][0]
-                            else:
-                                newValue[c] = similarStates[0][1][c]
-                newValue['isTerminalState'] = similarStates[0][1]['isTerminalState']
-                if "isStartingState" in similarStates[0][1]:
-                    newValue['isStartingState'] = similarStates[0][1]['isStartingState']
-                newState = (similarStates[0][0],newValue)
-                DFAlist.append(newState)
+# def minimise(DFAlist, alphabet):
+#     stateQueue = []
+#     counter = 0
+#     stateQueue.append(DFAlist[counter])
+#     change = True
+#     while stateQueue and change:
+#         currState = stateQueue.pop(0)
+#         currStateValue = currState[1] 
+#         similarStates = []
+#         for state in DFAlist:
+#                 areSameState = True
+#                 for c in alphabet:
+#                     if state[0] == currState[0]:
+#                         break
+#                     elif state[1][c] != currStateValue[c] or state[1]['isTerminalState'] != currStateValue['isTerminalState']:
+#                         areSameState = False
+#                         break
+#                 if areSameState == True:
+#                     similarStates.append(state)
+#                 else:
+#                     if not state in stateQueue:
+#                         stateQueue.append(state)
+#         if similarStates:
+#             if len(similarStates) > 1:
+#                 for s in DFAlist:
+#                     if s in similarStates:
+#                         DFAlist.remove(s)
+#                 newValue = dict() 
+#                 statesToBeConverted = []
+#                 for s in similarStates:
+#                     statesToBeConverted.append(s[0])
+#                 for c in alphabet:
+#                     for state in DFAlist:
+#                         if state[1][c] in statesToBeConverted:
+#                             stateQueue.remove(state)
+#                             state[1][c] = similarStates[0][0]
+#                             stateQueue.append(state)
+#                     for s in similarStates:
+#                         if s[1][c] in statesToBeConverted:
+#                             s[1][c] = similarStates[0][0]
+#                 for c in alphabet:
+#                     newValue[c] = similarStates[0][1][c]
+#                 newValue['isTerminalState'] = similarStates[0][1]['isTerminalState']
+#                 if "isStartingState" in similarStates[0][1]:
+#                     newValue['isStartingState'] = similarStates[0][1]['isStartingState']
+#                 newState = (similarStates[0][0],newValue)
+#                 DFAlist.append(newState)
+
+ 
+
+def minimise(DFAlist,alphabet):
+    
 
 
 regex = "(a|b)*abb"
@@ -292,8 +306,8 @@ for key, value in DFA.items():
 
 
 # minimization
-# nonTerminalStates = []
-# TerminalStates = []
+nonTerminalStates = []
+TerminalStates = []
 # for k, v in DFA.items():
 #     if k != 'startingState' and v['isTerminalState'] == True:
 #         TerminalStates.append({k: v})
@@ -325,3 +339,6 @@ DFAlist = list(DFA.items())
 startingStateReserve = DFAlist[0]
 DFAlist.remove(DFAlist[0])
 minimise(DFAlist,alphabet)
+
+
+print("amogus")
