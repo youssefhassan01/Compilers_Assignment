@@ -348,6 +348,59 @@ def minimise(stateGroups, alphabet):
     #     print(thing)
     return stateGroups
 
+# puts minimized DFA in final format
+
+
+def formatminimisedDFA(DFA, alphabet):
+
+    # first Name all the Groupstates
+    for i in range(len(DFA)):
+        stateGroup = DFA[i]
+        stateGroup["stateGroupName"] = 'S'+str(i)
+
+    FinalStatsedict = {}
+    for stateGroup in DFA:
+        FinalStateform = {}
+        for state in stateGroup["states"]:
+            # determine if starting State
+            stateInfo = list(state.values())[0]
+            # for k, v in state.items():
+            for k, v in stateInfo.items():
+                if k == 'isStartingState':
+                    FinalStateform["isStartingState"] = True
+                if k == 'isTerminalState':
+                    FinalStateform["isTerminalState"] = v
+
+        newName = stateGroup["stateGroupName"]
+        for c in alphabet:
+            # print(list(stateGroup["states"][0].values()))
+            firstState = list(stateGroup["states"][0].values())[0]
+            # print(firstState)
+            if c not in firstState.keys():
+                continue
+            newState = getnewState(stateGroup["states"][0], c)
+            newStategroup = getStateGroup(newState, DFA)
+            # FinalStateform[c] = getStateName(newStategroup)
+            FinalStateform[c] = newStategroup["stateGroupName"]
+        # del stateGroup["states"]
+        # del stateGroup["statenames"]
+        FinalStatsedict[newName] = FinalStateform
+
+    # getting startingState
+    veryFinalState = {}
+    for k, v in FinalStatsedict.items():
+        if 'isStartingState' in v.keys():
+            veryFinalState['startingState'] = k
+            break
+    veryFinalState.update(FinalStatsedict)
+    # print('printing loler in zewat')
+    # for k, v in FinalStatsedict.items():
+    #     print(k, v)
+    print('printing loler in zewat')
+    for k, v in veryFinalState.items():
+        print(k, v)
+    return veryFinalState
+
 
 regex = "(a|b)*abb"
 # regex = "(a|b)*"
@@ -417,10 +470,9 @@ StateGroups = [nonTerminalStates, TerminalStates]
 
 minimisedDFA = minimise(StateGroups, alphabet)
 
-print('minimized DFA is ')
-for state in minimisedDFA:
-    print(state)
+# print('minimized DFA is ')
+# for state in minimisedDFA:
+#     print(state)
 
 
-def formatminimisedDFA():
-    pass
+format_minDFA = formatminimisedDFA(minimisedDFA, alphabet)
