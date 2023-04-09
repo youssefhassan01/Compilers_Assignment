@@ -87,7 +87,7 @@ def getPrecedence(operator):
             return 4
         case '?':
             return 2
-        case '.':
+        case 'ඞ':
             return 1
         case '|':
             return 0
@@ -216,22 +216,22 @@ def preprocess(regexInput):
         if c == '[':
             bracketendind = getEndofRange(regexInput[i:])
             i += bracketendind-1  # skips bracket
-        if c in '*+?)]' and v not in '.*+?])|':
+        if c in '*+?)]' and v not in 'ඞ*+?])|':
             # print('found some special character and concatenating')
             # print(result[:i+1+rescounter])
             # +1 for the character itself (the brackets or asterisk or whatever)
             cuttingindex = i+rescounter+1
-            result = result[:cuttingindex] + '.' + result[cuttingindex:]
+            result = result[:cuttingindex] + 'ඞ' + result[cuttingindex:]
             rescounter += 1
             # print('result now is ', result)
         # if c is a letter
 
         # elif c.isalnum() and (v.isalnum() or v in '(['):
-        elif (c not in '*+?|.-[(' and v not in '*+?|.-)]'):
+        elif (c not in '*+?|ඞ-[(' and v not in '*+?|ඞ-)]'):
             # +1 for the character
             print('concatenating', c, 'to', v)
             cuttingindex = i+rescounter+1
-            result = result[:cuttingindex] + '.' + result[cuttingindex:]
+            result = result[:cuttingindex] + 'ඞ' + result[cuttingindex:]
             rescounter += 1
         i += 1
     print('first stage of processing result is', result)
@@ -288,7 +288,7 @@ def Shuntyard(regexInput):
                 postfix += stack.pop()
             stack.pop()
             isInClass = False
-        elif (c in "*+?|."):
+        elif (c in "*+?|ඞ"):
             while (stack and getPrecedence(c) <= getPrecedence(stack[-1])):
                 postfix += stack.pop()
             stack.append(c)
@@ -446,7 +446,7 @@ def makeNFA(regexInput):
             wildCardLogic()
         elif (c == "+"):
             plusLogic()
-        elif (c == '.'):
+        elif (c == 'ඞ'):
             concatLogic()
         elif (c == "?"):
             optionalLogic()
@@ -487,7 +487,7 @@ def makeNFA(regexInput):
 # makeNFA("ab?cd?(ef|g)*")
 
 # Tha main test cases
-# makeNFA("ab(b | c)*d+")
+makeNFA("ab(b | c)*d+")
 # makeNFA("[a-zA-Z_$][a-zA-Z0-9_$]*")
 # makeNFA("0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*")
 # makeNFA("https?://(www.)?[a-zA-Z0-9-_].(com|org|net)")
