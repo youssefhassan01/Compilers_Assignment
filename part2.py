@@ -336,7 +336,7 @@ def minimise(stateGroups, alphabet):
                     # get StateGroup of newState
                     newState_stateGroup = getStateGroup(
                         newState, stateGroups)
-                    if newState_stateGroup != stateGroup:  # ya rab el 7etta dee t4t8l
+                    if newState_stateGroup != stateGroup:
                         # first check if the rest of group members go to the same newState_stateGroup
                         # if they do then don't make a new group
                         if (checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, c) == False):
@@ -348,7 +348,8 @@ def minimise(stateGroups, alphabet):
                             stateGroup["statenames"].remove(
                                 getStateName(state))
                             stateGroup["states"].remove(
-                                state)  # ya rab dee t4t8l
+                                state)
+                            break  # break out of the alphabet loop: no need to check for more characters
         oldStategroupSize = len(currStateGroups)
     # print("minimized thing is ")
     # print(stateGroups)
@@ -415,7 +416,7 @@ def formatminimisedDFA(DFA, alphabet):
 # regex = "abc[g-h]*"
 # regex = "ab$_"
 # regex = "abc"
-regex = "(((a)(b)|(d))|(c))"  # error
+# regex = "(((a)(b)|(d))|(c))"
 # regex="ab|cd"
 # regex="((a)(b)|(c)(d))"
 # regex="(ab)|(cd)"
