@@ -165,8 +165,12 @@ def dfaFormatter(bigStateList):
     for k, v in bigStateDict.items():
         if k != 'startingState':
             for c in alphabet:
-                if c in v:
+                if c in v and len(v[c]) != 0:
                     v[c] = Statenamesdict[v[c]]
+                # remove unnecessary key characters
+                if c in v and len(v[c]) == 0:
+                    del v[c]
+
     return bigStateDict
 # NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory
 
@@ -305,6 +309,8 @@ def checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, cha
     for state in stateGroup["states"]:
 
         newState = getnewState(state, character)
+        if newState == None:
+            return False    # not sure if this is correct
         # get StateGroup of newState
         verynewState_stateGroup = getStateGroup(newState, currStateGroups)
         if newState_stateGroup != verynewState_stateGroup:
@@ -325,6 +331,8 @@ def minimise(stateGroups, alphabet):
             for state in stateGroup["states"]:
                 for c in alphabet:
                     newState = getnewState(state, c)
+                    if newState == None:
+                        continue
                     # get StateGroup of newState
                     newState_stateGroup = getStateGroup(
                         newState, stateGroups)
@@ -402,6 +410,28 @@ def formatminimisedDFA(DFA, alphabet):
     return veryFinalState
 
 
+# regex = "(abc|[a-z])"
+# regex = "ab?cd?(ef|g)*"
+# regex = "abc[g-h]*"
+# regex = "ab$_"
+# regex = "abc"
+regex = "(((a)(b)|(d))|(c))"  # error
+# regex="ab|cd"
+# regex="((a)(b)|(c)(d))"
+# regex="(ab)|(cd)"
+# regex="(abc|3)"
+# regex="ab|c"
+# regex="(a)b|c"
+# regex="(a)(b)|c"
+# regex="(a)(b)|c"
+# regex="(((ab)|d)|c)"
+# regex="[a-cd]*"
+# regex="[abc]"
+# regex="ab?"
+# regex="ab?cd?(ef|g)*"
+# regex = "(a|b)*abb"
+# regex = "(a|b)*"
+# regex = "(a|b)*abb"
 # The main Test cases
 # regex="ab(b | c)*d+"
 # regex="[a-zA-Z_$][a-zA-Z0-9_$]*"
@@ -409,9 +439,7 @@ def formatminimisedDFA(DFA, alphabet):
 # regex="https?://(www.)?[a-zA-Z0-9-_].(com|org|net)"
 # regex="[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
 
-regex = "(a|b)*abb"
-# regex = "(a|b)*"
-# regex = "(a|b)*abb"
+# don't forget to add re.compile and output errror
 
 alphabet = []
 # rudimentary system to get alphabet of regex

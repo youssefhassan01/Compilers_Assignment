@@ -229,12 +229,12 @@ def preprocess(regexInput):
         # elif c.isalnum() and (v.isalnum() or v in '(['):
         elif (c not in '*+?|ඞ-[(' and v not in '*+?|ඞ-)]'):
             # +1 for the character
-            print('concatenating', c, 'to', v)
+            # print('concatenating', c, 'to', v)
             cuttingindex = i+rescounter+1
             result = result[:cuttingindex] + 'ඞ' + result[cuttingindex:]
             rescounter += 1
         i += 1
-    print('first stage of processing result is', result)
+    # print('first stage of processing result is', result)
     # removes [] from the regex and replaces them with their equivalent ORed values
     result = preprocessrangeclasses(result)
     # print('final result is ', result)
@@ -272,7 +272,7 @@ def Shuntyard(regexInput):
     global postfix
     global stack
     regexInput = preprocess(regexInput)
-    print('preprocessed string is ', regexInput)
+    # print('preprocessed string is ', regexInput)
     isInClass = False
     for i in range(len(regexInput)):
         c = regexInput[i]
@@ -321,7 +321,7 @@ def Shuntyard(regexInput):
 
 def wildCardLogic():
     global superstate_stack
-    print("Handling the  * logic")
+    # print("Handling the  * logic")
     ss = superstate_stack.pop()
     newStartState = state()
     newEndState = state()
@@ -344,7 +344,7 @@ def wildCardLogic():
 
 def plusLogic():
     global superstate_stack
-    print("Handling the + logic")
+    # print("Handling the + logic")
     ss = superstate_stack.pop()
     newStartState = state()
     newEndState = state()
@@ -364,7 +364,7 @@ def plusLogic():
 
 def optionalLogic():
     global superstate_stack
-    print("Handling ? logic")
+    # print("Handling ? logic")
     ss = superstate_stack.pop()
     # no bypass from start to end
     # ss.startState.stateDict["epsilon"].append(ss.endState.name)
@@ -375,7 +375,7 @@ def optionalLogic():
 
 def charLogic(c):
     global superstate_stack
-    print("Handling the character", c)
+    # print("Handling the character", c)
     # make 2 states
     firstState = state()
     secondState = state()
@@ -487,15 +487,15 @@ def makeNFA(regexInput):
 # makeNFA("ab?cd?(ef|g)*")
 
 # Tha main test cases
-makeNFA("ab(b | c)*d+")
+# makeNFA("ab(b | c)*d+")
 # makeNFA("[a-zA-Z_$][a-zA-Z0-9_$]*")
 # makeNFA("0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*")
 # makeNFA("https?://(www.)?[a-zA-Z0-9-_].(com|org|net)")
 # makeNFA("[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]")
-for s in AllStates:
-    print(s)
-AllStatesJSON = utils.convertAllstates(AllStates)
-utils.drawNFA(AllStatesJSON, "NFA")
+# for s in AllStates:
+#     print(s)
+# AllStatesJSON = utils.convertAllstates(AllStates)
+# utils.drawNFA(AllStatesJSON, "NFA")
 
 
 # AllStatesJSON = utils.convertAllstates(AllStates)
