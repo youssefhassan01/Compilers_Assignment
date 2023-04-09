@@ -301,6 +301,17 @@ def getStateName(state):
             return k
 
 
+def checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, character):
+    for state in stateGroup["states"]:
+
+        newState = getnewState(state, character)
+        # get StateGroup of newState
+        verynewState_stateGroup = getStateGroup(newState, currStateGroups)
+        if newState_stateGroup != verynewState_stateGroup:
+            return False
+    return True
+
+
 def minimise(stateGroups, alphabet):
     oldStategroupSize = -1
     while oldStategroupSize != len(stateGroups):
@@ -309,6 +320,8 @@ def minimise(stateGroups, alphabet):
         currStateGroups = stateGroups.copy()
         for stateGroup in currStateGroups:
             # loop on each state in the state group
+            if (len(stateGroup["states"]) == 1):  # no need to check single element
+                continue
             for state in stateGroup["states"]:
                 for c in alphabet:
                     newState = getnewState(state, c)
@@ -316,33 +329,24 @@ def minimise(stateGroups, alphabet):
                     newState_stateGroup = getStateGroup(
                         newState, stateGroups)
                     if newState_stateGroup != stateGroup:  # ya rab el 7etta dee t4t8l
-                        # first check if there is another similar group to merge with  # I think we don't need this check?
-                        # make new state group
-                        newGroupofState = {"statenames": [getStateName(
-                            newState)], "states": [newState]}
-                        stateGroups.append(newGroupofState)
-                        # remove state from old group
-                        stateGroup["statenames"].remove(getStateName(newState))
-                        stateGroup["states"].remove(
-                            newState)  # ya rab dee t4t8l
+                        # first check if the rest of group members go to the same newState_stateGroup
+                        # if they do then don't make a new group
+                        if (checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, c) == False):
+                            # make new state group
+                            newGroupofState = {"statenames": [getStateName(
+                                state)], "states": [state]}
+                            stateGroups.append(newGroupofState)
+                            # remove state from old group
+                            stateGroup["statenames"].remove(
+                                getStateName(state))
+                            stateGroup["states"].remove(
+                                state)  # ya rab dee t4t8l
         oldStategroupSize = len(currStateGroups)
-
-        # if newState_stateGroup != None:
-        #     if newState_stateGroup != stateGroup:
-        #         stateGroups.remove(stateGroup)
-        #         stateGroups.remove(newState_stateGroup)
-        #         stateGroups.append(
-        #             {"statenames": stateGroup["statenames"] + newState_stateGroup["statenames"], "states": stateGroup["states"] + newState_stateGroup["states"]})
-        #         break
-        # for s in stateGroups:
-        #     if stateGroup != s:
-        #         if stateGroup[1][c] != s[1][c]:
-        #             stateGroups.remove(stateGroup)
-        #             stateGroups.remove(s)
-        #             stateGroups.append((stateGroup[0], s[0]))
-        #             break
-
-    pass
+    # print("minimized thing is ")
+    # print(stateGroups)
+    # for thing in stateGroups:
+    #     print(thing)
+    return stateGroups
 
 
 regex = "(a|b)*abb"
@@ -411,7 +415,12 @@ for k, v in DFA.items():
 
 StateGroups = [nonTerminalStates, TerminalStates]
 
-minimise(StateGroups, alphabet)
+minimisedDFA = minimise(StateGroups, alphabet)
+
+print('minimized DFA is ')
+for state in minimisedDFA:
+    print(state)
 
 
-# print("amogus")
+def formatminimisedDFA():
+    pass
