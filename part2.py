@@ -416,7 +416,8 @@ regex = "(a|b)*abb"
 alphabet = []
 # rudimentary system to get alphabet of regex
 for c in regex:
-    if (c.isalnum()):
+    # if (c.isalnum()):
+    if (c not in '*+?|ඞ-[()]'):
         if checkUnique(alphabet, c) == True:
             alphabet.append(c)
 
@@ -483,6 +484,3 @@ minimisedDFA = minimise(StateGroups, alphabet)
 
 
 format_minDFA = formatminimisedDFA(minimisedDFA, alphabet)
-
-
-print('$'. is ())
