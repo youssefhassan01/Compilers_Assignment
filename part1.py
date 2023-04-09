@@ -203,11 +203,12 @@ def preprocessrangeclasses(regexInput):
 # new appraoch: Separate preprocessing into 2 stages to make it easier:
 # handle the concatenation first and then handle the rangeclasses
 
+# takes raw input
+
 
 def preprocess(regexInput):
     result = ""+regexInput
     rescounter = 0
-    # isinClass = False
     i = 0
     while i < len(regexInput)-1:
         c = regexInput[i]
@@ -216,7 +217,7 @@ def preprocess(regexInput):
             bracketendind = getEndofRange(regexInput[i:])
             i += bracketendind-1  # skips bracket
         if c in '*+?)]' and v not in '.*+?])|':
-            print('found some special character and concatenating')
+            # print('found some special character and concatenating')
             # print(result[:i+1+rescounter])
             # +1 for the character itself (the brackets or asterisk or whatever)
             cuttingindex = i+rescounter+1
@@ -225,13 +226,15 @@ def preprocess(regexInput):
             # print('result now is ', result)
         # if c is a letter
 
-        elif c.isalnum() and (v.isalnum() or v in '(['):
+        # elif c.isalnum() and (v.isalnum() or v in '(['):
+        elif (c not in '*+?|.-[(' and v not in '*+?|.-)]'):
             # +1 for the character
+            print('concatenating', c, 'to', v)
             cuttingindex = i+rescounter+1
             result = result[:cuttingindex] + '.' + result[cuttingindex:]
             rescounter += 1
         i += 1
-    # print('first stage of processing result is', result)
+    print('first stage of processing result is', result)
     # removes [] from the regex and replaces them with their equivalent ORed values
     result = preprocessrangeclasses(result)
     # print('final result is ', result)
@@ -269,13 +272,14 @@ def Shuntyard(regexInput):
     global postfix
     global stack
     regexInput = preprocess(regexInput)
-    # print('preprocessed string is ', regexInput)
+    print('preprocessed string is ', regexInput)
     isInClass = False
     for i in range(len(regexInput)):
         c = regexInput[i]
-        if (c.isalnum()):
-            postfix += c
-        elif (c in '(['):
+        # # if (c.isalnum()):
+        # if (c.isalnum()):
+        #     postfix += c
+        if (c in '(['):
             stack.append(c)
             if c == '[':
                 isInClass = True
@@ -457,48 +461,20 @@ def makeNFA(regexInput):
 # (abc|[a-z])
 # regex = "ab?cd?(ef|g)*"
 # regex = "abc[g-h]*"
-# regex = "ab"
+# regex = "ab$_"
 # adam = makeNFA(regex)
-# for s in AllStates:
-#     print(s)
-# AllStatesJSON = utils.convertAllstates(AllStates)
-# utils.drawNFA(AllStatesJSON, "NFA")
 # makeNFA("(((a)(b)|(d))|(c))")
 # makeNFA("abc")
 # makeNFA("ab|cd")
 # makeNFA("((a)(b)|(c)(d))")
 # makeNFA("(ab)|(cd)")
-# makeNFA("(abc|3)")  # works lol
+# makeNFA("(abc|3)")
 # print(AllStates)
 # for s in AllStates:
 #     print(s)
-
-# AllStatesJSON = utils.convertAllstates(AllStates)
-# AllStatesReq = utils.convertAllstatestoReg(AllStatesJSON)
-# # utils.drawNFA(AllStatesJSON, "NFA")
-# # print('AllStatesJSON', AllStatesJSON)
-# # print('AllStatesJSON')
-# # for mystate, stateinfo in AllStatesJSON.items():
-# #     print(mystate, stateinfo)
-# print('AllStatesRequiredForm')
-# print('AllStatesRequiredForm')
-# for mystate, stateInfo in AllStatesReq.items():
-#     print(mystate, stateInfo)
-# for mystate in AllStatesJSON.items():
-#     print(mystate[0])
-
-
-# NFA = {}
-# Regex = "((a)(b))|((c)(d))"
-# try:
-#     re.compile(Regex)
-# except re.error:
-#     print("Non valid regex pattern")
-#     exit()
-# makeNFA(Regex)
-
 # ERROR CASES
-# makeNFA("x?[0-9]+")  # gives error hena
+# makeNFA("x?[0-9]+")
+
 
 # makeNFA("ab|c")
 # makeNFA("(a)b|c")
@@ -508,20 +484,19 @@ def makeNFA(regexInput):
 # makeNFA("[a-cd]*")
 # makeNFA("[abc]")
 # makeNFA("ab?")
-
-
 # makeNFA("ab?cd?(ef|g)*")
 
+# Tha main test cases
+# makeNFA("ab(b | c)*d+")
+# makeNFA("[a-zA-Z_$][a-zA-Z0-9_$]*")
+# makeNFA("0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*")
+# makeNFA("https?://(www.)?[a-zA-Z0-9-_].(com|org|net)")
+# makeNFA("[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]")
+for s in AllStates:
+    print(s)
+AllStatesJSON = utils.convertAllstates(AllStates)
+utils.drawNFA(AllStatesJSON, "NFA")
 
-# makeNFA("(((a)(b)|(d))|(c))")
-# makeNFA("abc")
-# makeNFA("ab|cd")
-# makeNFA("((a)(b)|(c)(d))")
-# makeNFA("(ab)|(cd)")
-# makeNFA("(abc|3)")  # works lol
-# print(AllStates)
-# for s in AllStates:
-#     print(s)
 
 # AllStatesJSON = utils.convertAllstates(AllStates)
 # utils.drawNFA(AllStatesJSON, "NFA")
@@ -529,27 +504,5 @@ def makeNFA(regexInput):
 # for mystate in AllStatesJSON.items():
 #     print(mystate[0])
 
-# print(superstate_stack[1])
-
-# A[1:3] starts from 1 really but excludes the 3
-# A = "Joseph"
-# print(A[1:])
-# print(A[1:3])
-# Regex = input("Enter Regex:")
-
-# size=len(Regex)
 
 # Regex = '[(hi)-z]'
-
-
-# 1. Required scope for the input regular expressions:
-#   - Alternation a|b
-#   - Concatenation ab
-#   - 1 or more a+
-#   - 0 or more a*
-#   - Optional a?
-#   - Character/number classes [abc] or [345]
-#   - Ranges [a-c] or [0-5]
-#   - Brackets for grouping ()
-# 2. You can use any third-party library to check the validity of the input regular expression.
-# 3. You can use any third-party library to help you draw a diagram of your FSM and deal with it as you like, as long as the JSON output file is as expected and stated in the assignment document.

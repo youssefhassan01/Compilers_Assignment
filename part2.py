@@ -402,6 +402,13 @@ def formatminimisedDFA(DFA, alphabet):
     return veryFinalState
 
 
+# The main Test cases
+# regex="ab(b | c)*d+"
+# regex="[a-zA-Z_$][a-zA-Z0-9_$]*"
+# regex="0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*"
+# regex="https?://(www.)?[a-zA-Z0-9-_].(com|org|net)"
+# regex="[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
+
 regex = "(a|b)*abb"
 # regex = "(a|b)*"
 # regex = "(a|b)*abb"
@@ -476,3 +483,6 @@ minimisedDFA = minimise(StateGroups, alphabet)
 
 
 format_minDFA = formatminimisedDFA(minimisedDFA, alphabet)
+
+
+print('$'. is ())
