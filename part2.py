@@ -1,6 +1,8 @@
 import part1 as thomNFA
 from queue import Queue
 from utils import utils
+import json
+import re
 
 
 def checkUnique(list, elem):
@@ -326,7 +328,8 @@ def minimise(stateGroups, alphabet):
         currStateGroups = stateGroups.copy()
         for stateGroup in currStateGroups:
             # loop on each state in the state group
-            if (len(stateGroup["states"]) == 1):  # no need to check single element
+            # no need to check single element or empty group
+            if (len(stateGroup["states"]) == 1):
                 continue
             for state in stateGroup["states"]:
                 for c in alphabet:
@@ -411,6 +414,7 @@ def formatminimisedDFA(DFA, alphabet):
     return veryFinalState
 
 
+regex = ""
 # regex = "(abc|[a-z])"
 # regex = "ab?cd?(ef|g)*"
 # regex = "abc[g-h]*"
@@ -425,21 +429,32 @@ def formatminimisedDFA(DFA, alphabet):
 # regex = "(a)b|c"
 # regex = "(a)(b)|c"
 # regex="(((ab)|d)|c)"
-# regex = "[a-h]*"  # error
+# regex = "[a-h]*"
 # regex = "[abc]"
 # regex = "ab?"
 # regex = "ab?cd?(ef|g)*"
 # regex = "(a|b)*"
 # regex = "(a|b)*abb"
-# regex = "[a-d]"
+# regex = "[a-d][a-d]"
 # The main Test cases
-# regex = "ab(b|c)*d+"
-regex = "[a-zA-Z_$][a-zA-Z0-9_$]*"
+# # regex = "ab(b|c)*d+"
+# regex = "[a-zA-Z_$][a-zA-Z0-9_$]*"
 # regex = "0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*"
 # regex = "https?://(www.)?[a-zA-Z0-9-_].(com|org|net)"
 # regex = "[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
 
 # don't forget to add re.compile and output errror
+
+if (len(regex) == 0):
+    print("Regex is empty")
+    exit()
+
+
+try:
+    re.compile(regex)
+except re.error:
+    print("Non valid regex pattern")
+    exit()
 
 
 def extractchars(c1, c2):
@@ -457,7 +472,8 @@ for i in range(len(regex)):
     if (c == '-'):
         newchars = extractchars(regex[i-1], regex[i+1])
         for char in newchars:
-            alphabet.append(char)
+            if checkUnique(alphabet, char) == True:
+                alphabet.append(char)
 
     if (c not in '*+?|ඞ-[()]'):
         if checkUnique(alphabet, c) == True:
@@ -467,7 +483,10 @@ for i in range(len(regex)):
 # make NFA from part1
 adam = thomNFA.makeNFA(regex)
 allStatesJSON = utils.convertAllstates(thomNFA.AllStates)
-allStates = utils.convertAllstatestoReg(allStatesJSON)
+allStates = utils.convertAllstatestoReq(allStatesJSON)
+
+with open("NFA.json", "w") as outfile:
+    json.dump(allStates, outfile, indent=4)
 
 
 utils.drawNFA(allStatesJSON, "NFA")
@@ -487,6 +506,9 @@ makeDFA(bigStateList)
 # for key in bigStateList:
 #     print(key)
 DFA = dfaFormatter(bigStateList)
+
+with open("DFA.json", "w") as outfile:
+    json.dump(allStates, outfile, indent=4)
 
 # print('intermedietly, bigStateList is: ', bigStateList)
 # print('intermedietly, bigStateList is: ', DFA)
@@ -516,8 +538,14 @@ for k, v in DFA.items():
 # print('TerminalStates is: ', TerminalStates)
 
 # keda we have the starting 2 groups
+StateGroups = []
+if (len(nonTerminalStates["statenames"]) == 0):
+    StateGroups = [TerminalStates]
+elif (len(TerminalStates["statenames"]) == 0):
+    StateGroups = [nonTerminalStates]
+elif (len(TerminalStates["statenames"]) != 0 and len(nonTerminalStates["statenames"]) != 0):
+    StateGroups = [nonTerminalStates, TerminalStates]
 
-StateGroups = [nonTerminalStates, TerminalStates]
 
 minimisedDFA = minimise(StateGroups, alphabet)
 
@@ -527,3 +555,7 @@ minimisedDFA = minimise(StateGroups, alphabet)
 
 
 format_minDFA = formatminimisedDFA(minimisedDFA, alphabet)
+
+
+with open("MinimizedDFA.json", "w") as outfile:
+    json.dump(allStates, outfile, indent=4)

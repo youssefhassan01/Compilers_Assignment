@@ -5,7 +5,7 @@ class utils:
 
     # converts all states to the required format
     @staticmethod
-    def convertAllstatestoReg(allStates):
+    def convertAllstatestoReq(allStates):
         newStatesDict = {}
         print(allStates['startingState'])
 
