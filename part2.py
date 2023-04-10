@@ -417,38 +417,52 @@ def formatminimisedDFA(DFA, alphabet):
 # regex = "ab$_"
 # regex = "abc"
 # regex = "(((a)(b)|(d))|(c))"
-# regex="ab|cd"
-# regex="((a)(b)|(c)(d))"
-# regex="(ab)|(cd)"
-# regex="(abc|3)"
-# regex="ab|c"
-# regex="(a)b|c"
-# regex="(a)(b)|c"
-# regex="(a)(b)|c"
+# regex = "ab|cd"
+# regex = "((a)(b)|(c)(d))"
+# regex = "(ab)|(cd)"
+# regex = "(abc|3)"
+# regex = "ab|c"
+# regex = "(a)b|c"
+# regex = "(a)(b)|c"
 # regex="(((ab)|d)|c)"
-# regex="[a-cd]*"
-# regex="[abc]"
-# regex="ab?"
-# regex="ab?cd?(ef|g)*"
-# regex = "(a|b)*abb"
+# regex = "[a-h]*"  # error
+# regex = "[abc]"
+# regex = "ab?"
+# regex = "ab?cd?(ef|g)*"
 # regex = "(a|b)*"
 # regex = "(a|b)*abb"
+# regex = "[a-d]"
 # The main Test cases
-# regex="ab(b | c)*d+"
-# regex="[a-zA-Z_$][a-zA-Z0-9_$]*"
-# regex="0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*"
-# regex="https?://(www.)?[a-zA-Z0-9-_].(com|org|net)"
-# regex="[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
+# regex = "ab(b|c)*d+"
+regex = "[a-zA-Z_$][a-zA-Z0-9_$]*"
+# regex = "0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*"
+# regex = "https?://(www.)?[a-zA-Z0-9-_].(com|org|net)"
+# regex = "[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
 
 # don't forget to add re.compile and output errror
 
+
+def extractchars(c1, c2):
+    processed_range = ""
+    for j in range(ord(c1)+1, ord(c2)):  # exclude c1 and c2
+        processed_range += chr(j)
+    print('processed range is ', processed_range)
+    return processed_range
+
+
 alphabet = []
 # rudimentary system to get alphabet of regex
-for c in regex:
-    # if (c.isalnum()):
+for i in range(len(regex)):
+    c = regex[i]
+    if (c == '-'):
+        newchars = extractchars(regex[i-1], regex[i+1])
+        for char in newchars:
+            alphabet.append(char)
+
     if (c not in '*+?|ඞ-[()]'):
         if checkUnique(alphabet, c) == True:
             alphabet.append(c)
+
 
 # make NFA from part1
 adam = thomNFA.makeNFA(regex)
