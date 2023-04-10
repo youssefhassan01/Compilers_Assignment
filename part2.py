@@ -415,7 +415,7 @@ def formatminimisedDFA(DFA, alphabet):
 
 
 regex = ""
-# regex = "(abc|[a-z])"
+regex = "(abc|[a-z])"
 # regex = "ab?cd?(ef|g)*"
 # regex = "abc[g-h]*"
 # regex = "ab$_"
@@ -556,6 +556,9 @@ minimisedDFA = minimise(StateGroups, alphabet)
 
 format_minDFA = formatminimisedDFA(minimisedDFA, alphabet)
 
+for state in format_minDFA:
+    print(state)
 
+utils.DrawDFA(format_minDFA, alphabet)
 with open("MinimizedDFA.json", "w") as outfile:
     json.dump(allStates, outfile, indent=4)

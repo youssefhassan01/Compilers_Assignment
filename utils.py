@@ -1,4 +1,4 @@
-from automathon import NFA
+from automathon import NFA, DFA
 
 
 class utils:
@@ -111,22 +111,57 @@ class utils:
         # )
         # mynfa.show_diagram(None, 'loldiag')
 
+    @staticmethod
+    def DrawDFA(MinimizedDFA, alphabet):
 
-# states = {'s5', 's7', 's6', 's1', 's3', 's0', 's4', 's2'}
-# input_symbols = {'a-c', 'd'}
-# transitions = {
-#     's0': {'a-c': {"s1"}},
-#     's1': {'': {'s5'}},
-#     's2': {'d': {'s3'}},
-#     's3': {'': {'s5'}},
-#     's4': {'': {'s0', 's2'}},
-#     's5': {'': {'s7', 's6'}},
-#     's6': {'': {'s7', 's4'}},
-#     's7': {}
-# }
-# initial_state = "s6"
-# final_states = {"s7"}
-# automata2 = NFA(states, input_symbols,
-#                 transitions, initial_state, final_states)
-# # automata2.view("NFA Visualization")
-# automata2.view("NFA Visualization")
+        print('Minimized DFA is')
+        print(MinimizedDFA)
+        # alphabet is a list we convert it into string
+        inputalphabet = set(alphabet)  # w dee heya el sigma
+        states = set()  # w dee heya el Q
+        for k, v in MinimizedDFA.items():
+            if k != 'startingState':
+                states.add(k)
+        iniialState = MinimizedDFA['startingState']
+        finalStates = set()
+        for k, v in MinimizedDFA.items():
+            if k != 'startingState':
+                if v['isTerminalState'] == True:
+                    finalStates.add(k)
+        transitions = {}
+        for k, v in MinimizedDFA.items():
+            if k != 'startingState':
+                transitions[k] = {}
+                for key, value in v.items():
+                    if key != 'isTerminalState' and key != 'isStartingState':
+                        transitions[k][key] = value
+        print('Drawing DFA')
+        print('states ', states)
+        print('inputalphabet ', inputalphabet)
+        print('transitions ', transitions)
+        print('iniialState ', iniialState)
+        print('finalStates ', finalStates)
+
+        automata2 = DFA(states, inputalphabet, transitions,
+                        iniialState, finalStates)
+        automata2.view("DFA")
+        pass
+
+    # states = {'s5', 's7', 's6', 's1', 's3', 's0', 's4', 's2'}
+    # input_symbols = {'a-c', 'd'}
+    # transitions = {
+    #     's0': {'a-c': {"s1"}},
+    #     's1': {'': {'s5'}},
+    #     's2': {'d': {'s3'}},
+    #     's3': {'': {'s5'}},
+    #     's4': {'': {'s0', 's2'}},
+    #     's5': {'': {'s7', 's6'}},
+    #     's6': {'': {'s7', 's4'}},
+    #     's7': {}
+    # }
+    # initial_state = "s6"
+    # final_states = {"s7"}
+    # automata2 = NFA(states, input_symbols,
+    #                 transitions, initial_state, final_states)
+    # # automata2.view("NFA Visualization")
+    # automata2.view("NFA Visualization")
