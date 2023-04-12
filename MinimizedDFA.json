@@ -3,9 +3,14 @@
     "S0": {
         "isStartingState": true,
         "isTerminalState": false,
-        "\t": "S1"
+        "a": "S1",
+        "b": "S1"
     },
     "S1": {
-        "isTerminalState": true
+        "isTerminalState": true,
+        "a": "S1",
+        "b": "S1",
+        "!": "S1",
+        "?": "S1"
     }
 }

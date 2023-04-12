@@ -138,16 +138,20 @@ def convertRangeClass(stringInput):
                 i += 2
             else:
                 if (i == 0):
-                    out += c
+                    out += '/' + c if c in '?*+|ඞ' else c
                 if (i != 0 and c != '-'):
-                    out += '|' + c
+                    # out += '|' + c
+                    out += '/' + '|' + c if c in '?*+|ඞ' else '|' + c
                     # differencecounter += 1
         else:
             if (i == 0):
-                out += c
+                out += '/' + c if c in '?*+|ඞ' else c
+
             if (i != 0 and c != '-'):
-                out += '|' + c
-                # differencecounter += 1
+                # out += '|' + c
+                out += '|' + '/' + c if c in '?*+|ඞ' else '|' + c
+
+            # differencecounter += 1
 
         i += 1
     # -2 for the brackets that are ommitted outside
@@ -440,9 +444,13 @@ def makeNFA(regexInput):
     global superstate_stack
 
     postfix = Shuntyard(regexInput)
+    print('pofix', postfix)
     for i in range(len(postfix)):
         c = postfix[i]
-        if (c == "*"):
+        if (c == "/" and i < len(postfix)-1 and postfix[i+1] in "+*?|ඞ"):
+            charLogic(postfix[i+1])
+            i += 1
+        elif (c == "*"):
             wildCardLogic()
         elif (c == "+"):
             plusLogic()
@@ -477,7 +485,7 @@ def makeNFA(regexInput):
 # makeNFA("x?[0-9]+")
 
 
-# makeNFA("ab|c")
+# makeNFA("[ab][ab]*[!?]?")
 # makeNFA("(a)b|c")
 # makeNFA("(a)(b)|c")
 # makeNFA("(a)(b)|c")

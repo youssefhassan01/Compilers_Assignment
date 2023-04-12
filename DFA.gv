@@ -4,5 +4,10 @@ digraph DFA {
 	S1 [label=S1 shape=doublecircle]
 	S0 [label=S0 shape=circle]
 	"" -> S0 [label=""]
-	S0 -> S1 [label="	"]
+	S0 -> S1 [label=a]
+	S0 -> S1 [label=b]
+	S1 -> S1 [label=a]
+	S1 -> S1 [label=b]
+	S1 -> S1 [label="!"]
+	S1 -> S1 [label="?"]
 }

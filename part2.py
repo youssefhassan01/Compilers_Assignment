@@ -210,6 +210,8 @@ def getStateName(state):
         if k != 'isStartingState' and k != 'isTerminalState':
             return k
 
+# Checks if Othergroup Members go to the same state group
+
 
 def checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, character):
     for state in stateGroup["states"]:
@@ -244,16 +246,6 @@ def checkOtherGroups(state, originalStateGroup, currStateGroups, alphabet):
             if newState != theOtherStatenNewState:
                 flag = False
                 break
-                # if newState == None:
-                #     continue
-                # # get StateGroup of newState
-                # newState_stateGroup = getStateGroup(newState, currStateGroups)
-                # if newState_stateGroup != stateGroup:
-                #     # check if there is another group to merge with
-                #     for otherGroup in currStateGroups:
-                #         if otherGroup != stateGroup:
-                #             if checkOtherGroupMembers(newState_stateGroup, otherGroup, currStateGroups, c) == True:
-                #                 return True
         if (flag == True):
             return stateGroup
     return None
@@ -296,22 +288,6 @@ def minimise(stateGroups, alphabet):
                     newState_stateGroup = getStateGroup(
                         newState, stateGroups)
                     if newState_stateGroup != stateGroup:
-                        # check if there is another group to merge with
-                        # potentialMergeGroup = checkOtherGroups(
-                        #     state, stateGroup, currStateGroups, alphabet)
-                        # potentialMergeGroup = checkOtherGroups(
-                        #     state, stateGroup, stateGroups, alphabet)
-                        # if (potentialMergeGroup != None):
-                        #     # merge with the other group
-                        #     potentialMergeGroup["statenames"].append(
-                        #         getStateName(state))
-                        #     potentialMergeGroup["states"].append(state)
-                        #     # remove state from old group
-                        #     stateGroup["statenames"].remove(
-                        #         getStateName(state))
-                        #     stateGroup["states"].remove(
-                        #         state)
-                        #     break
                         # first check if the rest of group members go to the same newState_stateGroup
                         # if they do then don't make a new group
                         if (checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, c) == False):
@@ -402,7 +378,7 @@ def formatminimisedDFA(DFA, alphabet):
     return veryFinalState
 
 
-regex = "       \t "
+# regex = "       \t "
 # regex = input("Enter your regex: ")
 # regex = "ab(b|c)*d+"
 
@@ -429,6 +405,8 @@ regex = "       \t "
 # regex = "[a-d][a-d]"
 # The main Test cases
 # # regex = "ab(b|c)*d+"
+# regex = "[a-z_][a-z0-9_]*[!?]?"
+regex = "[ab][ab]*[!?]?"
 # regex = "[a-zA-Z_$][a-zA-Z0-9_$]*"
 # regex = "0|[1-9A-F][0-9A-F]*|[1-9a-f][0-9a-f]*"
 # regex = "https?://(www.)?[a-zA-Z0-9-_].(com|org|net)"
@@ -459,15 +437,16 @@ def extractchars(c1, c2):
 
 alphabet = []
 # rudimentary system to get alphabet of regex
-for i in range(len(regex)):
-    c = regex[i]
+preprocessedregex = thomNFA.preprocess(regex)
+for i in range(len(preprocessedregex)):
+    c = preprocessedregex[i]
     if (c == '-'):
-        newchars = extractchars(regex[i-1], regex[i+1])
+        newchars = extractchars(preprocessedregex[i-1], preprocessedregex[i+1])
         for char in newchars:
             if checkUnique(alphabet, char) == True:
                 alphabet.append(char)
 
-    if (c not in '*+?|ඞ-[()]'):
+    if (c not in '*+?|ඞ-[()]' or (i > 0 and preprocessedregex[i-1] != '/')):
         if checkUnique(alphabet, c) == True:
             alphabet.append(c)
 
