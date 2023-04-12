@@ -272,7 +272,7 @@ def Shuntyard(regexInput):
     global postfix
     global stack
     regexInput = preprocess(regexInput)
-    # print('preprocessed string is ', regexInput)
+    print('preprocessed string is ', regexInput)
     isInClass = False
     for i in range(len(regexInput)):
         c = regexInput[i]
@@ -460,6 +460,7 @@ def makeNFA(regexInput):
 # abc
 # (abc|[a-z])
 # regex = "ab?cd?(ef|g)*"
+# regex = input("Enter your regex: ")
 # regex = "abc[g-h]*"
 # regex = "ab$_"
 # adam = makeNFA(regex)

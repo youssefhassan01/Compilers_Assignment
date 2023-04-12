@@ -122,7 +122,7 @@ class utils:
         for k, v in MinimizedDFA.items():
             if k != 'startingState':
                 states.add(k)
-        iniialState = MinimizedDFA['startingState']
+        initialState = MinimizedDFA['startingState']
         finalStates = set()
         for k, v in MinimizedDFA.items():
             if k != 'startingState':
@@ -139,11 +139,11 @@ class utils:
         print('states ', states)
         print('inputalphabet ', inputalphabet)
         print('transitions ', transitions)
-        print('iniialState ', iniialState)
+        print('initialState ', initialState)
         print('finalStates ', finalStates)
 
         automata2 = DFA(states, inputalphabet, transitions,
-                        iniialState, finalStates)
+                        initialState, finalStates)
         automata2.view("DFA")
         pass
 

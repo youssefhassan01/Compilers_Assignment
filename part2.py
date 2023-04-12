@@ -176,102 +176,6 @@ def dfaFormatter(bigStateList):
     return bigStateDict
 # NOTE: when reading output of epsilon closure please read carefully as it outputs key and state in a dictionory
 
-# region old code
-# def minimise(DFAlist, alphabet):
-#     minimiseQueue = Queue(maxsize=0)
-#     if len(currStates) != 0:
-#         minimiseQueue.put(currStates[0])
-#     counter = 0
-#     splitState = []
-#     while not minimiseQueue.empty():
-#         # split nonsimilar states into seperate entites
-#         currState = minimiseQueue.get()
-#         for c in alphabet:
-#             value = list(currState.values())[0]
-#             if c in value:
-#                 comparisonState = value[c]
-#                 for s in currStates:
-#                     for k, v in s.items():
-#                         if c in v:
-#                             if comparisonState != v[c]:
-#                                 splitState.append(currState)
-#                                 currStates.remove(currState)
-#                                 counter = 0
-#                                 minimiseQueue.put(currStates[counter])
-#     # update starting state before merging
-#     newStartingState = ""
-#     for state in currStates:
-#         # print('mysate is ', state)
-#         foundStart = False
-#         for k, v in state.items():
-#             if k == DFA['startingState']:
-#                 newStartingState = list(currStates[0].keys())[0]
-#                 foundStart = True
-#                 break
-#         if foundStart == True:
-#             break
-#     # update connection of split states before merging merged states
-#     for state in splitState:
-#         for k, v in state.items():
-#             for c in alphabet:
-#                 if c in v:
-#                     reqState = v[c]
-#                 for s in currStates:
-#                     for i, j in s.items():
-#                         if reqState == i:
-#                             v[c] = list(currStates[0].keys())[0]
-#     mergedState = currStates[0]
-#     return mergedState, splitState, newStartingState
-
-# def minimise(DFAlist, alphabet):
-#     stateQueue = []
-#     counter = 0
-#     stateQueue.append(DFAlist[counter])
-#     change = True
-#     while stateQueue and change:
-#         currState = stateQueue.pop(0)
-#         currStateValue = currState[1]
-#         similarStates = []
-#         for state in DFAlist:
-#                 areSameState = True
-#                 for c in alphabet:
-#                     if state[0] == currState[0]:
-#                         break
-#                     elif state[1][c] != currStateValue[c] or state[1]['isTerminalState'] != currStateValue['isTerminalState']:
-#                         areSameState = False
-#                         break
-#                 if areSameState == True:
-#                     similarStates.append(state)
-#                 else:
-#                     if not state in stateQueue:
-#                         stateQueue.append(state)
-#         if similarStates:
-#             if len(similarStates) > 1:
-#                 for s in DFAlist:
-#                     if s in similarStates:
-#                         DFAlist.remove(s)
-#                 newValue = dict()
-#                 statesToBeConverted = []
-#                 for s in similarStates:
-#                     statesToBeConverted.append(s[0])
-#                 for c in alphabet:
-#                     for state in DFAlist:
-#                         if state[1][c] in statesToBeConverted:
-#                             stateQueue.remove(state)
-#                             state[1][c] = similarStates[0][0]
-#                             stateQueue.append(state)
-#                     for s in similarStates:
-#                         if s[1][c] in statesToBeConverted:
-#                             s[1][c] = similarStates[0][0]
-#                 for c in alphabet:
-#                     newValue[c] = similarStates[0][1][c]
-#                 newValue['isTerminalState'] = similarStates[0][1]['isTerminalState']
-#                 if "isStartingState" in similarStates[0][1]:
-#                     newValue['isStartingState'] = similarStates[0][1]['isStartingState']
-#                 newState = (similarStates[0][0],newValue)
-#                 DFAlist.append(newState)
-# endregion
-
 
 def getStatefromName(stateName):
     global DFA
@@ -319,6 +223,39 @@ def checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, cha
             return False
     return True
 
+# checks if there is another group to merge with
+# returns the group to merge with
+
+
+def checkOtherGroups(state, originalStateGroup, currStateGroups, alphabet):
+    for stateGroup in currStateGroups:
+        if stateGroup == originalStateGroup:
+            continue
+        # take any state from the group
+        theOtherState = stateGroup["states"][0]
+        flag = True
+        for c in alphabet:
+            newState = getnewState(state, c)
+            theOtherStatenNewState = getnewState(theOtherState, c)
+
+            # should the check here be on group or state? idk
+            if newState != theOtherStatenNewState:
+                flag = False
+                break
+                # if newState == None:
+                #     continue
+                # # get StateGroup of newState
+                # newState_stateGroup = getStateGroup(newState, currStateGroups)
+                # if newState_stateGroup != stateGroup:
+                #     # check if there is another group to merge with
+                #     for otherGroup in currStateGroups:
+                #         if otherGroup != stateGroup:
+                #             if checkOtherGroupMembers(newState_stateGroup, otherGroup, currStateGroups, c) == True:
+                #                 return True
+        if (flag == True):
+            return stateGroup
+    return None
+
 
 def minimise(stateGroups, alphabet):
     oldStategroupSize = -1
@@ -326,12 +263,14 @@ def minimise(stateGroups, alphabet):
         # StateGroups will be update in the loop so we need to make a copy of it
         # but CurrentStateGroups will not be updated during it
         currStateGroups = stateGroups.copy()
+        changedStaeGroupsFlag = False
         for stateGroup in currStateGroups:
             # loop on each state in the state group
             # no need to check single element or empty group
             if (len(stateGroup["states"]) == 1):
                 continue
             for state in stateGroup["states"]:
+                # lol
                 for c in alphabet:
                     newState = getnewState(state, c)
                     if newState == None:
@@ -340,8 +279,24 @@ def minimise(stateGroups, alphabet):
                     newState_stateGroup = getStateGroup(
                         newState, stateGroups)
                     if newState_stateGroup != stateGroup:
-                        # first check if the rest of group members go to the same newState_stateGroup
-                        # if they do then don't make a new group
+                        # check if there is another group to merge with
+                        # potentialMergeGroup = checkOtherGroups(
+                        #     state, stateGroup, currStateGroups, alphabet)
+                        potentialMergeGroup = checkOtherGroups(
+                            state, stateGroup, stateGroups, alphabet)
+                        if (potentialMergeGroup != None):
+                            # merge with the other group
+                            potentialMergeGroup["statenames"].append(
+                                getStateName(state))
+                            potentialMergeGroup["states"].append(state)
+                            # remove state from old group
+                            stateGroup["statenames"].remove(
+                                getStateName(state))
+                            stateGroup["states"].remove(
+                                state)
+                            break
+                            # first check if the rest of group members go to the same newState_stateGroup
+                            # if they do then don't make a new group
                         if (checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, c) == False):
                             # make new state group
                             newGroupofState = {"statenames": [getStateName(
@@ -352,7 +307,10 @@ def minimise(stateGroups, alphabet):
                                 getStateName(state))
                             stateGroup["states"].remove(
                                 state)
+                            changedStaeGroupsFlag = True
                             break  # break out of the alphabet loop: no need to check for more characters
+                # if changedStaeGroupsFlag == True:
+                #     break  # break out of the state loop: to go and update the StateGroups
         oldStategroupSize = len(currStateGroups)
     # print("minimized thing is ")
     # print(stateGroups)
@@ -414,8 +372,11 @@ def formatminimisedDFA(DFA, alphabet):
     return veryFinalState
 
 
-regex = ""
-regex = "(abc|[a-z])"
+# regex = ""
+# regex = input("Enter your regex: ")
+regex = "ab(b|c)*d+"
+
+# regex = "(abc|[a-z])"
 # regex = "ab?cd?(ef|g)*"
 # regex = "abc[g-h]*"
 # regex = "ab$_"
@@ -561,4 +522,4 @@ for state in format_minDFA:
 
 utils.DrawDFA(format_minDFA, alphabet)
 with open("MinimizedDFA.json", "w") as outfile:
-    json.dump(allStates, outfile, indent=4)
+    json.dump(format_minDFA, outfile, indent=4)
