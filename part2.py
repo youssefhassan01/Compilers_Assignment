@@ -232,6 +232,8 @@ def checkOtherGroups(state, originalStateGroup, currStateGroups, alphabet):
         if stateGroup == originalStateGroup:
             continue
         # take any state from the group
+        if len(stateGroup["states"]) == 0:
+            continue
         theOtherState = stateGroup["states"][0]
         flag = True
         for c in alphabet:
@@ -268,6 +270,21 @@ def minimise(stateGroups, alphabet):
             # loop on each state in the state group
             # no need to check single element or empty group
             if (len(stateGroup["states"]) == 1):
+                # check if it can be merged with another states
+                state = stateGroup["states"][0]
+                potentialMergeGroup = checkOtherGroups(
+                    state, stateGroup, stateGroups, alphabet)
+                if (potentialMergeGroup != None):
+                    # merge with the other group
+                    potentialMergeGroup["statenames"].append(
+                        getStateName(state))
+                    potentialMergeGroup["states"].append(state)
+                    # remove state from old group
+                    stateGroup["statenames"].remove(
+                        getStateName(state))
+                    stateGroup["states"].remove(
+                        state)
+                    stateGroups.remove(stateGroup)
                 continue
             for state in stateGroup["states"]:
                 # lol
@@ -282,23 +299,36 @@ def minimise(stateGroups, alphabet):
                         # check if there is another group to merge with
                         # potentialMergeGroup = checkOtherGroups(
                         #     state, stateGroup, currStateGroups, alphabet)
-                        potentialMergeGroup = checkOtherGroups(
-                            state, stateGroup, stateGroups, alphabet)
-                        if (potentialMergeGroup != None):
-                            # merge with the other group
-                            potentialMergeGroup["statenames"].append(
-                                getStateName(state))
-                            potentialMergeGroup["states"].append(state)
-                            # remove state from old group
-                            stateGroup["statenames"].remove(
-                                getStateName(state))
-                            stateGroup["states"].remove(
-                                state)
-                            break
-                            # first check if the rest of group members go to the same newState_stateGroup
-                            # if they do then don't make a new group
+                        # potentialMergeGroup = checkOtherGroups(
+                        #     state, stateGroup, stateGroups, alphabet)
+                        # if (potentialMergeGroup != None):
+                        #     # merge with the other group
+                        #     potentialMergeGroup["statenames"].append(
+                        #         getStateName(state))
+                        #     potentialMergeGroup["states"].append(state)
+                        #     # remove state from old group
+                        #     stateGroup["statenames"].remove(
+                        #         getStateName(state))
+                        #     stateGroup["states"].remove(
+                        #         state)
+                        #     break
+                        # first check if the rest of group members go to the same newState_stateGroup
+                        # if they do then don't make a new group
                         if (checkOtherGroupMembers(newState_stateGroup, stateGroup, currStateGroups, c) == False):
                             # make new state group
+                            potentialMergeGroup = checkOtherGroups(
+                                state, stateGroup, stateGroups, alphabet)
+                            if (potentialMergeGroup != None):
+                                # merge with the other group
+                                potentialMergeGroup["statenames"].append(
+                                    getStateName(state))
+                                potentialMergeGroup["states"].append(state)
+                                # remove state from old group
+                                stateGroup["statenames"].remove(
+                                    getStateName(state))
+                                stateGroup["states"].remove(
+                                    state)
+                                break
                             newGroupofState = {"statenames": [getStateName(
                                 state)], "states": [state]}
                             stateGroups.append(newGroupofState)
@@ -372,9 +402,9 @@ def formatminimisedDFA(DFA, alphabet):
     return veryFinalState
 
 
-# regex = ""
+regex = "       \t "
 # regex = input("Enter your regex: ")
-regex = "ab(b|c)*d+"
+# regex = "ab(b|c)*d+"
 
 # regex = "(abc|[a-z])"
 # regex = "ab?cd?(ef|g)*"
@@ -405,6 +435,7 @@ regex = "ab(b|c)*d+"
 # regex = "[1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5]"
 
 # don't forget to add re.compile and output errror
+regex = regex.replace(" ", "")
 
 if (len(regex) == 0):
     print("Regex is empty")

@@ -2,99 +2,11 @@
     "startingState": "S0",
     "S0": {
         "isTerminalState": false,
-        "a": [
+        "\t": [
             "S1"
         ]
     },
     "S1": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S2"
-        ]
-    },
-    "S2": {
-        "isTerminalState": false,
-        "b": [
-            "S3"
-        ]
-    },
-    "S3": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S10"
-        ]
-    },
-    "S4": {
-        "isTerminalState": false,
-        "b": [
-            "S5"
-        ]
-    },
-    "S5": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S9"
-        ]
-    },
-    "S6": {
-        "isTerminalState": false,
-        "c": [
-            "S7"
-        ]
-    },
-    "S7": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S9"
-        ]
-    },
-    "S8": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S4",
-            "S6"
-        ]
-    },
-    "S9": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S10",
-            "S11"
-        ]
-    },
-    "S10": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S8",
-            "S11"
-        ]
-    },
-    "S11": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S14"
-        ]
-    },
-    "S12": {
-        "isTerminalState": false,
-        "d": [
-            "S13"
-        ]
-    },
-    "S13": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S14",
-            "S15"
-        ]
-    },
-    "S14": {
-        "isTerminalState": false,
-        "epsilon": [
-            "S12"
-        ]
-    },
-    "S15": {
         "isTerminalState": true
     }
 }
